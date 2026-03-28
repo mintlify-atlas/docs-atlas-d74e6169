@@ -1,0 +1,95 @@
+---
+title: "Simplex Noise"
+description: "A multi-color gradient mapped into smooth, animated curves, delivering a sleek, futuristic visual."
+---
+
+Simplex Noise drives a color gradient through two layered simplex noise fields that animate over time. Colors cycle continuously through the noise field, and a `stepsPerColor` parameter lets you posterize the gradient into discrete bands. A `softness` control adjusts how sharply each band transitions to the next.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { SimplexNoise } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <SimplexNoise
+          colors={['#4449CF', '#FFD1E0', '#F94446', '#FFD36B', '#FFFFFF']}
+          stepsPerColor={2}
+          softness={0}
+          scale={0.6}
+          speed={0.5}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, simplexNoiseFragmentShader, getShaderColorFromString, ShaderFitOptions } from '@paper-design/shaders';
+
+    const container = document.getElementById('shader-container');
+
+    const colors = ['#4449CF', '#FFD1E0', '#F94446', '#FFD36B', '#FFFFFF'];
+
+    const mount = new ShaderMount(container, simplexNoiseFragmentShader, {
+      u_colors: colors.map(getShaderColorFromString),
+      u_colorsCount: colors.length,
+      u_stepsPerColor: 2,
+      u_softness: 0,
+      u_fit: ShaderFitOptions['none'],
+      u_scale: 0.6,
+      u_rotation: 0,
+      u_offsetX: 0,
+      u_offsetY: 0,
+      u_originX: 0.5,
+      u_originY: 0.5,
+      u_worldWidth: 0,
+      u_worldHeight: 0,
+    }, undefined, 0.5);
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField body="colors" type="string[]" default='["#4449CF", "#FFD1E0", "#F94446", "#FFD36B", "#FFFFFF"]'>
+  Array of CSS color strings cycled through the noise field. Accepts up to 10 colors.
+</ParamField>
+
+<ParamField body="stepsPerColor" type="number" default="2">
+  Number of discrete steps (bands) interpolated between each adjacent pair of colors. `1` gives one band per color; higher values posterize the gradient into more bands. Range `1` to `10`.
+</ParamField>
+
+<ParamField body="softness" type="number" default="0">
+  Sharpness of the transition between color bands. `0` gives a hard edge; `1` gives a smooth gradient. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="speed" type="number" default="0.5">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField body="frame" type="number" default="0">
+  Starting animation frame in milliseconds.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `defaultPreset` | Five-color retro palette with 2 steps per color and hard edges. |
+| `spotsPreset` | Three-color warm palette showing the noise as distinct blobs. |
+| `firstContactPreset` | Five-color dark moody palette at a very small scale. |
+| `bubblegumPreset` | Four-color pastel palette with smooth softness and fast animation. |
+
+Import presets from `@paper-design/shaders-react`:
+
+```ts
+import { simplexNoisePresets } from '@paper-design/shaders-react';
+```
+
+## Sizing props
+
+Simplex Noise uses pattern sizing by default (`fit: 'none'`). It also accepts all `ShaderSizingParams` (`fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, `worldHeight`). See [Sizing and fit](/concepts/sizing-and-fit) for details.

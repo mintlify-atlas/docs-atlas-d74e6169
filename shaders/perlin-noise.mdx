@@ -1,0 +1,100 @@
+---
+title: "Perlin Noise"
+description: "Animated 3D Perlin noise with exposed controls."
+---
+
+Classic animated 3D Perlin noise rendered as a two-color pattern. The noise is built from multiple octaves of gradient noise sampled through a 3D volume, with the third dimension driven by time to produce smooth, organic animation. Proportion and softness controls let you dial the output from a hard binary mask to a fully blended gradient.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { PerlinNoise } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <PerlinNoise
+          colorBack="#632ad5"
+          colorFront="#fccff7"
+          proportion={0.35}
+          softness={0.1}
+          octaveCount={1}
+          persistence={1}
+          lacunarity={1.5}
+          speed={0.5}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, perlinNoiseFragmentShader } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, perlinNoiseFragmentShader, {
+      u_colorBack: [0.388, 0.165, 0.835, 1],
+      u_colorFront: [0.988, 0.812, 0.969, 1],
+      u_proportion: 0.35,
+      u_softness: 0.1,
+      u_octaveCount: 1,
+      u_persistence: 1,
+      u_lacunarity: 1.5,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorFront" type="string" default="#fccff7">
+  Foreground color as a CSS color string.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="#632ad5">
+  Background color as a CSS color string.
+</ParamField>
+
+<ParamField path="proportion" type="number" default="0.35">
+  Blend point between the two colors. `0.5` gives equal distribution. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="softness" type="number" default="0.1">
+  Color transition sharpness. `0` = hard edge, `1` = smooth gradient. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="octaveCount" type="number" default="1">
+  Number of Perlin noise octaves. More octaves add finer detail. Range: `1` to `8`.
+</ParamField>
+
+<ParamField path="persistence" type="number" default="1">
+  Amplitude falloff between octaves (roughness). Range: `0.3` to `1`.
+</ParamField>
+
+<ParamField path="lacunarity" type="number" default="1.5">
+  Frequency multiplier between octaves. Higher values compress the pattern. Range: `1.5` to `10`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="0.5">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Static frame position when `speed` is `0`.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | Purple-to-pink noise at low octave count |
+| `Nintendo Water` | Blue animated water surface |
+| `Moss` | Dense, slow-moving organic coverage |
+| `Worms` | Single-octave worm-like shapes |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

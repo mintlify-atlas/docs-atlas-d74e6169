@@ -1,0 +1,213 @@
+---
+title: "Fluted Glass"
+description: "Fluted glass image filter transforms an image into streaked, ribbed distortions, giving a mix of clarity and obscurity."
+---
+
+Fluted Glass is an image filter shader that distorts an input image through configurable ribbed or streaked patterns, simulating the look of fluted or textured glass. Grid shape, distortion profile, blur, edge softness, and grain are all individually adjustable.
+
+<Note>
+  This is an image filter shader — it requires an image input. In React, pass a URL string to the `image` prop and it is loaded automatically. In vanilla JS, pass a fully loaded `HTMLImageElement` to the `u_image` uniform.
+</Note>
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { FlutedGlass } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <FlutedGlass
+          image="/my-photo.jpg"
+          shape="lines"
+          distortionShape="prism"
+          size={0.5}
+          distortion={0.5}
+          shadows={0.25}
+          highlights={0.1}
+          blur={0}
+          edges={0.25}
+          colorBack="#00000000"
+          colorShadow="#000000"
+          colorHighlight="#ffffff"
+          style={{ width: 600, height: 400 }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, flutedGlassFragmentShader, GlassGridShapes, GlassDistortionShapes } from '@paper-design/shaders';
+
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.src = '/my-photo.jpg';
+
+    image.addEventListener('load', () => {
+      const container = document.querySelector('#canvas-container');
+
+      const shader = new ShaderMount(container, flutedGlassFragmentShader, {
+        u_image: image,
+        u_colorBack: [0, 0, 0, 0],
+        u_colorShadow: [0, 0, 0, 1],
+        u_colorHighlight: [1, 1, 1, 1],
+        u_shadows: 0.25,
+        u_size: 0.5,
+        u_angle: 0,
+        u_shape: GlassGridShapes.lines,
+        u_distortionShape: GlassDistortionShapes.prism,
+        u_distortion: 0.5,
+        u_highlights: 0.1,
+        u_shift: 0,
+        u_blur: 0,
+        u_edges: 0.25,
+        u_stretch: 0,
+        u_marginLeft: 0,
+        u_marginRight: 0,
+        u_marginTop: 0,
+        u_marginBottom: 0,
+        u_grainMixer: 0,
+        u_grainOverlay: 0,
+      });
+    });
+    ```
+
+    <Note>
+      The `HTMLImageElement` must be fully loaded before passing it to `ShaderMount`. Listen for the `load` event as shown above.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="image" type="string (React) | HTMLImageElement (vanilla JS)" required>
+  The source image to filter. In React, pass a URL string — the component loads it automatically. In vanilla JS, pass a fully loaded `HTMLImageElement` as `u_image`.
+</ParamField>
+
+<ParamField path="shape" type="GlassGridShape" default="'lines'">
+  Shape of the repeating grid pattern. Use the `GlassGridShapes` enum (vanilla JS) or string literal (React).
+
+  | Value | Description |
+  |---|---|
+  | `lines` | Straight parallel lines |
+  | `linesIrregular` | Organically varying lines |
+  | `wave` | Sinusoidal wave pattern |
+  | `zigzag` | Zigzag stripe pattern |
+  | `pattern` | Crosshatch pattern |
+</ParamField>
+
+<ParamField path="distortionShape" type="GlassDistortionShape" default="'prism'">
+  The profile of distortion applied within each stripe. Use the `GlassDistortionShapes` enum (vanilla JS) or string literal (React).
+
+  | Value | Description |
+  |---|---|
+  | `prism` | Prism-like refraction |
+  | `lens` | Lens-shaped bulge |
+  | `contour` | Contour-following distortion |
+  | `cascade` | Cascading waterfall-like flow |
+  | `flat` | Flat, minimal distortion |
+</ParamField>
+
+<ParamField path="size" type="number" default="0.5">
+  Size of the distortion shape grid. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="angle" type="number" default="0">
+  Direction of the grid relative to the image, in degrees. Range: `0` to `180`.
+</ParamField>
+
+<ParamField path="distortion" type="number" default="0.5">
+  Power of distortion applied within each stripe. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="shift" type="number" default="0">
+  Texture shift in the direction opposite the grid. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="stretch" type="number" default="0">
+  Extra distortion along the grid lines. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="blur" type="number" default="0">
+  One-directional blur over the image and extra blur around edges. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="edges" type="number" default="0.25">
+  Glass distortion and softness on the image edges. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="shadows" type="number" default="0.25">
+  Color gradient added over the image and background, following the distortion shape. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="highlights" type="number" default="0.1">
+  Thin strokes rendered along the distortion shape, useful for anti-aliasing on small grids. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="'#00000000'">
+  Background color as a CSS color string (including alpha). Visible outside the image frame.
+</ParamField>
+
+<ParamField path="colorShadow" type="string" default="'#000000'">
+  Color of shadow gradients applied over the distortion pattern.
+</ParamField>
+
+<ParamField path="colorHighlight" type="string" default="'#ffffff'">
+  Color of highlight strokes along the distortion edges.
+</ParamField>
+
+<ParamField path="margin" type="number" default="0">
+  Shorthand to set all four margins simultaneously. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="marginLeft" type="number" default="0">
+  Distance from the left edge to the effect. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="marginRight" type="number" default="0">
+  Distance from the right edge to the effect. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="marginTop" type="number" default="0">
+  Distance from the top edge to the effect. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="marginBottom" type="number" default="0">
+  Distance from the bottom edge to the effect. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="grainMixer" type="number" default="0">
+  Strength of grain distortion applied to shape edges. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="grainOverlay" type="number" default="0">
+  Post-processing black/white grain overlay strength. Range: `0` to `1`.
+</ParamField>
+
+## Presets
+
+The following presets are exported from `@paper-design/shaders-react`:
+
+| Export | Name | Description |
+|---|---|---|
+| `defaultPreset` | Default | Straight lines with prism distortion |
+| `wavesPreset` | Waves | Wave grid with contour distortion and blur |
+| `abstractPreset` | Abstract | Irregular lines at high scale and full blur |
+| `foldsPreset` | Folds | Cascade distortion with margins giving a folded edge look |
+
+```ts
+import { flutedGlassPresets } from '@paper-design/shaders-react';
+```
+
+## Enums
+
+Import `GlassGridShapes` and `GlassDistortionShapes` from `@paper-design/shaders` when using the vanilla JS API:
+
+```ts
+import { GlassGridShapes, GlassDistortionShapes } from '@paper-design/shaders';
+
+// GlassGridShapes: lines | linesIrregular | wave | zigzag | pattern
+// GlassDistortionShapes: prism | lens | contour | cascade | flat
+```

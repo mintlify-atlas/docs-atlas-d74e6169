@@ -1,0 +1,131 @@
+---
+title: "Static Mesh Gradient"
+description: "Multi-point mesh gradients with up to 10 color spots, enhanced by two-direction warping, adjustable blend sharpness, and grain controls. Perfect for elegant wallpapers and atmospheric backdrops."
+---
+
+Static Mesh Gradient produces a high-quality mesh gradient from up to 10 color spots. Unlike the animated Mesh Gradient, the spot positions are determined by a seed value (`positions`) rather than time, making it ideal for static art direction. Two independent sine-wave warp axes distort the mesh, and a `mixing` parameter controls whether colors blend softly or snap into hard stripes.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { StaticMeshGradient } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <StaticMeshGradient
+          colors={['#ffad0a', '#6200ff', '#e2a3ff', '#ff99fd']}
+          positions={2}
+          waveX={1.0}
+          waveXShift={0.6}
+          waveY={1.0}
+          waveYShift={0.21}
+          mixing={0.93}
+          grainMixer={0}
+          grainOverlay={0}
+          rotation={270}
+          speed={0}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, staticMeshGradientFragmentShader, getShaderColorFromString, ShaderFitOptions } from '@paper-design/shaders';
+
+    const container = document.getElementById('shader-container');
+
+    const colors = ['#ffad0a', '#6200ff', '#e2a3ff', '#ff99fd'];
+
+    const mount = new ShaderMount(container, staticMeshGradientFragmentShader, {
+      u_colors: colors.map(getShaderColorFromString),
+      u_colorsCount: colors.length,
+      u_positions: 2,
+      u_waveX: 1.0,
+      u_waveXShift: 0.6,
+      u_waveY: 1.0,
+      u_waveYShift: 0.21,
+      u_mixing: 0.93,
+      u_grainMixer: 0,
+      u_grainOverlay: 0,
+      u_fit: ShaderFitOptions['contain'],
+      u_scale: 1,
+      u_rotation: 270,
+      u_offsetX: 0,
+      u_offsetY: 0,
+      u_originX: 0.5,
+      u_originY: 0.5,
+      u_worldWidth: 0,
+      u_worldHeight: 0,
+    }, undefined, 0);
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField body="colors" type="string[]" default='["#ffad0a", "#6200ff", "#e2a3ff", "#ff99fd"]'>
+  Array of CSS color strings for each color spot. Accepts up to 10 colors.
+</ParamField>
+
+<ParamField body="positions" type="number" default="2">
+  Seed value that determines the placement of color spots. Range `0` to `100`. Different seeds produce different spatial arrangements.
+</ParamField>
+
+<ParamField body="waveX" type="number" default="1.0">
+  Strength of sine wave distortion along the X axis. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="waveXShift" type="number" default="0.6">
+  Phase offset applied to the X-axis wave. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="waveY" type="number" default="1.0">
+  Strength of sine wave distortion along the Y axis. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="waveYShift" type="number" default="0.21">
+  Phase offset applied to the Y-axis wave. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="mixing" type="number" default="0.93">
+  Blending behavior between color spots. `0` produces hard stripes, `0.5` is smooth, `1` gives the most gradual blend. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="grainMixer" type="number" default="0">
+  Strength of grain distortion applied to color spot edges. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="grainOverlay" type="number" default="0">
+  Post-processing black/white film grain overlay blended on top of the final color. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="speed" type="number" default="0">
+  Animation speed multiplier. The default is `0` (static). Set to a non-zero value to animate the warp distortion over time.
+</ParamField>
+
+<ParamField body="frame" type="number" default="0">
+  Starting animation frame in milliseconds. Useful for getting a deterministic first frame.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `defaultPreset` | Vibrant four-color palette with high waveX/waveY distortion and smooth mixing. |
+| `sixtiesPreset` | Earthy, desaturated palette with no mixing (hard stripes) and heavy grain. |
+| `sunsetPreset` | Warm teal-to-white sunset palette with moderate wave distortion. |
+| `seaPreset` | Deep blue ocean palette with asymmetric wave distortion. |
+
+Import presets from `@paper-design/shaders-react`:
+
+```ts
+import { staticMeshGradientPresets } from '@paper-design/shaders-react';
+```
+
+## Sizing props
+
+Static Mesh Gradient also accepts all `ShaderSizingParams` (`fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, `worldHeight`). See [Sizing and fit](/concepts/sizing-and-fit) for details.

@@ -1,0 +1,124 @@
+---
+title: "Water"
+description: "Water-like surface distortion with natural caustic realism. Works as an image filter or animated texture without image."
+---
+
+Water simulates a liquid surface over an input image using layered caustic noise and simplex waves. It can also run as a standalone animated texture without any image input, filling the canvas with an abstract rippling pattern.
+
+<Note>
+  When used as an image filter, the `image` prop is required. In React, pass a URL string and the component loads it automatically. In vanilla JS, pass a fully loaded `HTMLImageElement` to `u_image`. Without an image, the shader renders the caustic pattern over the `colorBack` color.
+</Note>
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { Water } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <Water
+          image="/my-photo.jpg"
+          speed={1}
+          size={1}
+          caustic={0.1}
+          waves={0.3}
+          layering={0.5}
+          highlights={0.07}
+          edges={0.8}
+          colorBack="#909090"
+          colorHighlight="#ffffff"
+          style={{ width: 600, height: 400 }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, waterFragmentShader } from '@paper-design/shaders';
+
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.src = '/my-photo.jpg';
+
+    image.addEventListener('load', () => {
+      const container = document.querySelector('#canvas-container');
+
+      const shader = new ShaderMount(container, waterFragmentShader, {
+        u_image: image,
+        u_colorBack: [0.565, 0.565, 0.565, 1],
+        u_colorHighlight: [1, 1, 1, 1],
+        u_highlights: 0.07,
+        u_layering: 0.5,
+        u_edges: 0.8,
+        u_waves: 0.3,
+        u_caustic: 0.1,
+        u_size: 1,
+      });
+    });
+    ```
+
+    <Note>
+      The `HTMLImageElement` must be fully loaded before passing it to `ShaderMount`. Listen for the `load` event as shown above.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="image" type="string (React) | HTMLImageElement (vanilla JS)">
+  Optional source image to apply the water distortion to. In React, pass a URL string. In vanilla JS, pass a fully loaded `HTMLImageElement` as `u_image`. When omitted, the shader renders the caustic pattern over `colorBack`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="1">
+  Animation playback speed multiplier.
+</ParamField>
+
+<ParamField path="size" type="number" default="1">
+  Pattern scale relative to the image. Range: `0.01` to `7`.
+</ParamField>
+
+<ParamField path="caustic" type="number" default="0.1">
+  Strength of the caustic distortion applied to the image UV coordinates. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="waves" type="number" default="0.3">
+  Additional distortion based on simplex noise, independent of the caustic layer. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="layering" type="number" default="0.5">
+  Strength of the second caustic distortion layer. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="highlights" type="number" default="0.07">
+  Amount of highlight color blended over the image following the caustic shape. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="edges" type="number" default="0.8">
+  Caustic distortion power applied at the image edges. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="'#909090'">
+  Background color visible outside the image frame, or used as the base when no image is provided.
+</ParamField>
+
+<ParamField path="colorHighlight" type="string" default="'#ffffff'">
+  Color of the caustic highlight overlay.
+</ParamField>
+
+## Presets
+
+The following presets are exported from `@paper-design/shaders-react`:
+
+| Export | Name | Description |
+|---|---|---|
+| `defaultPreset` | Default | Balanced caustic distortion with subtle highlights |
+| `slowMoPreset` | Slow-mo | Slow, large caustic waves with visible highlights |
+| `abstractPreset` | Abstract | High-scale, high-caustic standalone texture |
+| `streamingPreset` | Streaming | Fast moving wave distortion |
+
+```ts
+import { waterPresets } from '@paper-design/shaders-react';
+```

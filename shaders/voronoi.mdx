@@ -1,0 +1,110 @@
+---
+title: "Voronoi"
+description: "Anti-aliased animated Voronoi pattern with smooth and customizable edges."
+---
+
+An anti-aliased animated Voronoi diagram using a double-pass edge detection algorithm. Cell centers drift over time driven by sinusoidal motion, and cell colors are drawn from a gradient palette of up to 5 colors. Gap width, glow, and distortion are all adjustable.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { Voronoi } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <Voronoi
+          colors={['#ff8247', '#ffe53d']}
+          stepsPerColor={3}
+          colorGlow="#ffffff"
+          colorGap="#2e0000"
+          distortion={0.4}
+          gap={0.04}
+          glow={0}
+          speed={0.5}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      voronoiFragmentShader,
+      getShaderColorFromString,
+      getShaderNoiseTexture,
+    } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, voronoiFragmentShader, {
+      u_colors: [
+        [1, 0.510, 0.278, 1],
+        [1, 0.898, 0.239, 1],
+      ],
+      u_colorsCount: 2,
+      u_stepsPerColor: 3,
+      u_colorGlow: [1, 1, 1, 1],
+      u_colorGap: [0.180, 0, 0, 1],
+      u_distortion: 0.4,
+      u_gap: 0.04,
+      u_glow: 0,
+      u_noiseTexture: getShaderNoiseTexture(),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colors" type="string[]" default='["#ff8247","#ffe53d"]'>
+  Array of up to 5 colors distributed across Voronoi cells.
+</ParamField>
+
+<ParamField path="stepsPerColor" type="number" default="3">
+  Number of interpolation steps between base colors. Range: `1` to `3`.
+</ParamField>
+
+<ParamField path="colorGap" type="string" default='"#2e0000"'>
+  Color used for the border/gap between cells.
+</ParamField>
+
+<ParamField path="colorGlow" type="string" default='"#ffffff"'>
+  Color tint for the radial inner glow inside cells. Effective when `glow` is greater than `0`.
+</ParamField>
+
+<ParamField path="distortion" type="number" default="0.4">
+  Strength of noise-driven displacement of cell centers. Range: `0` to `0.5`.
+</ParamField>
+
+<ParamField path="gap" type="number" default="0.04">
+  Width of the border between cells. Range: `0` to `0.1`.
+</ParamField>
+
+<ParamField path="glow" type="number" default="0">
+  Strength of the radial inner shadow/glow inside cells. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="0.5">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Static frame position when `speed` is `0`.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | Orange and yellow cells with dark red gaps |
+| `Lights` | Neon-lit cells with pink gaps and strong glow |
+| `Cells` | White cells with black gaps and inner glow |
+| `Bubbles` | Blue cells with white gaps and full glow |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

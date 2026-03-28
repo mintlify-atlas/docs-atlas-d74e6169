@@ -1,0 +1,127 @@
+---
+title: "Grain Gradient"
+description: "Multi-color gradients with grainy, noise-textured distortion available in 7 animated abstract forms."
+---
+
+Grain Gradient combines a multi-color gradient with a choice of 7 animated shape types — wave, dots, truchet, corners, ripple, blob, and sphere. Each shape animates continuously and is distorted by fractal noise. An `intensity` parameter controls how much the noise warps the color bands, while a `noise` parameter adds a raw grainy overlay.
+
+<Note>
+  Grain is calculated using screen-space coordinates (`gl_FragCoord`), meaning the grain texture does not scale or rotate with the shader's sizing parameters.
+</Note>
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { GrainGradient } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <GrainGradient
+          colorBack="#000000"
+          colors={['#7300ff', '#eba8ff', '#00bfff', '#2a00ff']}
+          shape="corners"
+          softness={0.5}
+          intensity={0.5}
+          noise={0.25}
+          speed={1}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, grainGradientFragmentShader, getShaderColorFromString, getShaderNoiseTexture, GrainGradientShapes, ShaderFitOptions } from '@paper-design/shaders';
+
+    const container = document.getElementById('shader-container');
+
+    const colors = ['#7300ff', '#eba8ff', '#00bfff', '#2a00ff'];
+
+    const mount = new ShaderMount(container, grainGradientFragmentShader, {
+      u_colorBack: getShaderColorFromString('#000000'),
+      u_colors: colors.map(getShaderColorFromString),
+      u_colorsCount: colors.length,
+      u_shape: GrainGradientShapes['corners'],
+      u_softness: 0.5,
+      u_intensity: 0.5,
+      u_noise: 0.25,
+      u_noiseTexture: getShaderNoiseTexture(),
+      u_fit: ShaderFitOptions['contain'],
+      u_scale: 1,
+      u_rotation: 0,
+      u_offsetX: 0,
+      u_offsetY: 0,
+      u_originX: 0.5,
+      u_originY: 0.5,
+      u_worldWidth: 0,
+      u_worldHeight: 0,
+    }, undefined, 1);
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField body="colorBack" type="string" default='"#000000"'>
+  Background color shown behind the gradient shape. Accepts any CSS color string.
+</ParamField>
+
+<ParamField body="colors" type="string[]" default='["#7300ff", "#eba8ff", "#00bfff", "#2a00ff"]'>
+  Array of CSS color strings. Accepts up to 7 colors, blended through the chosen shape.
+</ParamField>
+
+<ParamField body="shape" type='"wave" | "dots" | "truchet" | "corners" | "ripple" | "blob" | "sphere"' default='"corners"'>
+  The animated shape form used to drive the gradient. Each shape animates differently.
+  
+  - `wave` — animated sine wave
+  - `dots` — grid of orbiting dots
+  - `truchet` — randomized arc tile pattern
+  - `corners` — opposing corner blobs
+  - `ripple` — concentric ripple rings
+  - `blob` — organic moving blob
+  - `sphere` — lit 3D sphere with moving light source
+</ParamField>
+
+<ParamField body="softness" type="number" default="0.5">
+  Sharpness of transitions between color bands. `0` gives hard edges; `1` gives a smooth gradient. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="intensity" type="number" default="0.5">
+  How strongly fractal noise distorts the boundaries between color bands. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="noise" type="number" default="0.25">
+  Strength of the raw grainy noise overlay applied on top of the gradient. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="speed" type="number" default="1">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField body="frame" type="number" default="0">
+  Starting animation frame in milliseconds.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `defaultPreset` | Four-color purple/blue palette on black using the `corners` shape. |
+| `wavePreset` | Three-color warm earthy palette on near-black using the `wave` shape. |
+| `dotsPreset` | Four-color vibrant palette using the `dots` shape at 0.6× scale. |
+| `truchetPreset` | Three-color palette with maximum grain using the `truchet` shape. |
+| `ripplePreset` | Three-color palette using the `ripple` shape at 0.5× scale. |
+| `blobPreset` | Three-color muted palette using the `blob` shape. |
+
+Import presets from `@paper-design/shaders-react`:
+
+```ts
+import { grainGradientPresets } from '@paper-design/shaders-react';
+```
+
+## Sizing props
+
+Grain Gradient also accepts all `ShaderSizingParams` (`fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, `worldHeight`). See [Sizing and fit](/concepts/sizing-and-fit) for details.

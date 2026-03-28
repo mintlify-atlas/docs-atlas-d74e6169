@@ -1,0 +1,108 @@
+---
+title: "React quickstart"
+description: "Add a Paper Shader to your React app in minutes"
+---
+
+<Note>
+  Pin your dependency to an exact version. Paper Shaders ships breaking changes under `0.0.x` versioning while the API stabilises. Use `"@paper-design/shaders-react": "0.0.72"` in your `package.json`.
+</Note>
+
+<Steps>
+  <Step title="Install">
+    <CodeGroup>
+
+    ```bash npm
+    npm install @paper-design/shaders-react
+    ```
+
+    ```bash yarn
+    yarn add @paper-design/shaders-react
+    ```
+
+    ```bash pnpm
+    pnpm add @paper-design/shaders-react
+    ```
+
+    </CodeGroup>
+
+    The package requires React 18 or 19 as a peer dependency. No other dependencies are needed.
+  </Step>
+
+  <Step title="Add your first shader">
+    Import `MeshGradient` and drop it into your component. The shader fills its container — give the parent (or the component itself via `style`) a width and height.
+
+    ```tsx
+    import { MeshGradient } from '@paper-design/shaders-react';
+
+    export default function Hero() {
+      return (
+        <MeshGradient
+          colors={['#e0eaff', '#241d9a', '#f75092', '#9f50d3']}
+          speed={1}
+          distortion={0.8}
+          swirl={0.1}
+          style={{ width: '100%', height: 400 }}
+        />
+      );
+    }
+    ```
+
+    The props above reflect the `defaultPreset` values shipped with `MeshGradient`. They are all optional — omit any prop to use its default.
+
+    <Tip>
+      The `style` prop accepts any CSS you would pass to a `<div>`. Shaders render into a `<div>` that contains a `<canvas>`, so `border-radius`, `overflow: hidden`, `position`, and other layout properties all work as expected.
+    </Tip>
+  </Step>
+
+  <Step title="Explore presets">
+    Every shader exports a `presets` array with curated parameter sets. Spread a preset's `params` directly onto the component to apply it.
+
+    ```tsx
+    import { MeshGradient, meshGradientPresets } from '@paper-design/shaders-react';
+
+    // Available presets: defaultPreset, inkPreset, purplePreset, beachPreset
+    const beachPreset = meshGradientPresets.find((p) => p.name === 'Beach')!;
+
+    export default function Background() {
+      return (
+        <MeshGradient
+          {...beachPreset.params}
+          style={{ width: '100%', height: '100vh' }}
+        />
+      );
+    }
+    ```
+
+    All other shaders follow the same pattern — import `<ShaderName>Presets` alongside the component.
+  </Step>
+
+  <Step title="Customise">
+    Adjust colors, speed, and distortion to match your design. Set `speed={0}` to produce a static image with no animation loop running — useful for decorative elements where motion is unwanted.
+
+    ```tsx
+    import { MeshGradient } from '@paper-design/shaders-react';
+
+    export default function StaticBanner() {
+      return (
+        <MeshGradient
+          // Up to 10 colors as CSS hex strings
+          colors={['#bcecf6', '#00aaff', '#00f7ff', '#ffd447']}
+          // 0 stops the animation entirely — zero rAF cost
+          speed={0}
+          // Organic noise distortion, 0–1
+          distortion={0.8}
+          // Vortex swirl effect, 0–1
+          swirl={0.35}
+          // Grain applied to shape edges, 0–1
+          grainMixer={0}
+          // Post-processing black/white grain overlay, 0–1
+          grainOverlay={0}
+          style={{ width: '100%', height: 320 }}
+        />
+      );
+    }
+    ```
+
+    For the full list of `MeshGradient` props including sizing controls (`fit`, `scale`, `rotation`, `offsetX`, `offsetY`), see the [MeshGradient reference](/shaders/mesh-gradient).
+  </Step>
+</Steps>

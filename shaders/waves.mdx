@@ -1,0 +1,97 @@
+---
+title: "Waves"
+description: "Static line pattern configurable into textures ranging from sharp zigzags to smooth flowing waves."
+---
+
+A static line pattern rendered as alternating bands of two colors. The line shape morphs continuously between zigzag, sine, and two irregular wave modes using the `shape` parameter. Frequency, amplitude, spacing, and softness give full control over the texture appearance.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { Waves } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <Waves
+          colorFront="#ffbb00"
+          colorBack="#000000"
+          shape={0}
+          frequency={0.5}
+          amplitude={0.5}
+          spacing={1.2}
+          proportion={0.1}
+          softness={0}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, wavesFragmentShader } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, wavesFragmentShader, {
+      u_colorFront: [1, 0.733, 0, 1],
+      u_colorBack: [0, 0, 0, 1],
+      u_shape: 0,
+      u_frequency: 0.5,
+      u_amplitude: 0.5,
+      u_spacing: 1.2,
+      u_proportion: 0.1,
+      u_softness: 0,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorFront" type="string" default="#ffbb00">
+  Foreground color of the wave lines.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="#000000">
+  Background color between the wave lines.
+</ParamField>
+
+<ParamField path="shape" type="number" default="0">
+  Line shape. `0` = zigzag, `1` = sine, `2`–`3` = irregular waves. Fractional values morph between shapes. Range: `0` to `3`.
+</ParamField>
+
+<ParamField path="frequency" type="number" default="0.5">
+  Wave frequency (number of cycles). Range: `0` to `2`.
+</ParamField>
+
+<ParamField path="amplitude" type="number" default="0.5">
+  Wave amplitude (height of oscillation). Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="spacing" type="number" default="1.2">
+  Space between every two wave lines. Range: `0` to `2`.
+</ParamField>
+
+<ParamField path="proportion" type="number" default="0.1">
+  Blend point between the front and back colors. `0.5` = equal distribution. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="softness" type="number" default="0">
+  Color transition sharpness. `0` = hard edge, `1` = smooth gradient. Range: `0` to `1`.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | Yellow zigzag lines on black |
+| `Groovy` | Irregular waves, coral and cream |
+| `Tangled up` | Dense entangled waves in teal and green |
+| `Ride the wave` | Large wave silhouettes in near-black and white |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

@@ -1,0 +1,143 @@
+---
+title: "Color Panels"
+description: "Glowing translucent 3D panels rotating around a central axis."
+---
+
+Color Panels simulates glowing semi-transparent planes rotating around a central vertical axis, producing a pseudo-3D perspective effect. Panels are colored using up to 7 colors in a repeating sequence. Each panel can be skewed horizontally with two independent angle parameters, and the gradient control blends adjacent colors within a single panel.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { ColorPanels } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <ColorPanels
+          colors={['#ff9d00', '#fd4f30', '#809bff', '#6d2eff', '#333aff', '#f15cff', '#ffd557']}
+          colorBack="#000000"
+          angle1={0}
+          angle2={0}
+          length={1.1}
+          edges={false}
+          blur={0}
+          fadeIn={1}
+          fadeOut={0.3}
+          gradient={0}
+          density={3}
+          scale={0.8}
+          speed={0.5}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, colorPanelsFragmentShader, getShaderColorFromString, ShaderFitOptions } from '@paper-design/shaders';
+
+    const container = document.getElementById('shader-container');
+
+    const colors = ['#ff9d00', '#fd4f30', '#809bff', '#6d2eff', '#333aff', '#f15cff', '#ffd557'];
+
+    const mount = new ShaderMount(container, colorPanelsFragmentShader, {
+      u_colors: colors.map(getShaderColorFromString),
+      u_colorsCount: colors.length,
+      u_colorBack: getShaderColorFromString('#000000'),
+      u_angle1: 0,
+      u_angle2: 0,
+      u_length: 1.1,
+      u_edges: false,
+      u_blur: 0,
+      u_fadeIn: 1,
+      u_fadeOut: 0.3,
+      u_gradient: 0,
+      u_density: 3,
+      u_fit: ShaderFitOptions['contain'],
+      u_scale: 0.8,
+      u_rotation: 0,
+      u_offsetX: 0,
+      u_offsetY: 0,
+      u_originX: 0.5,
+      u_originY: 0.5,
+      u_worldWidth: 0,
+      u_worldHeight: 0,
+    }, undefined, 0.5);
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField body="colors" type="string[]" default='["#ff9d00", "#fd4f30", "#809bff", "#6d2eff", "#333aff", "#f15cff", "#ffd557"]'>
+  Array of CSS color strings assigned to panels in sequence. Accepts up to 7 colors. Supports alpha transparency.
+</ParamField>
+
+<ParamField body="colorBack" type="string" default='"#000000"'>
+  Background color shown behind the panels. Accepts any CSS color string, including transparent.
+</ParamField>
+
+<ParamField body="angle1" type="number" default="0">
+  Horizontal skew of the left (near) edge of each panel. Range `-1` to `1`. Positive values skew the left edge inward.
+</ParamField>
+
+<ParamField body="angle2" type="number" default="0">
+  Horizontal skew of the right (near) edge of each panel. Range `-1` to `1`. Positive values skew the right edge inward.
+</ParamField>
+
+<ParamField body="length" type="number" default="1.1">
+  Panel length relative to the total canvas height. Values greater than `1` extend panels beyond the canvas edges. Range `0` to `3`.
+</ParamField>
+
+<ParamField body="edges" type="boolean" default="false">
+  When `true`, highlights the edges of each panel with a bright rim for a more defined look.
+</ParamField>
+
+<ParamField body="blur" type="number" default="0">
+  Softens the side edges of each panel. `0` gives sharp edges; `0.5` gives heavily blurred edges. Range `0` to `0.5`.
+</ParamField>
+
+<ParamField body="fadeIn" type="number" default="1">
+  Transparency of panels near the central axis (approaching the viewer). `0` makes them fully transparent near center; `1` is fully opaque. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="fadeOut" type="number" default="0.3">
+  Transparency of panels near the viewer (the front of the 3D space). Higher values make panels near the viewer more transparent. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="gradient" type="number" default="0">
+  Color mixing within a single panel. `0` fills each panel with a solid color; `1` blends into the adjacent color across the panel. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="density" type="number" default="3">
+  Controls the angular spacing between panels. Higher values pack panels more tightly. Range `0.25` to `7`.
+</ParamField>
+
+<ParamField body="speed" type="number" default="0.5">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField body="frame" type="number" default="0">
+  Starting animation frame in milliseconds.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `defaultPreset` | Seven-color vibrant palette on black with default panel geometry. |
+| `glassPreset` | Four-color palette with skewed angles, edge highlights, and blur for a glass pane look. |
+| `gradientPreset` | Five-color palette with heavy gradient mixing and blur, creating a soft aurora effect. |
+| `openingPreset` | Single cyan color on dark purple with fast speed and strong fadeOut for a dramatic opening. |
+
+Import presets from `@paper-design/shaders-react`:
+
+```ts
+import { colorPanelsPresets } from '@paper-design/shaders-react';
+```
+
+## Sizing props
+
+Color Panels also accepts all `ShaderSizingParams` (`fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, `worldHeight`). See [Sizing and fit](/concepts/sizing-and-fit) for details.

@@ -1,0 +1,77 @@
+---
+title: "Introduction"
+description: "Paper Shaders — zero-dependency WebGL canvas shaders for React and vanilla JS"
+---
+
+Paper Shaders is a collection of 28 high-performance WebGL2 shaders you can drop into any web app. Install from npm, configure with typed props, and ship animated backgrounds, textures, and image effects with zero runtime dependencies.
+
+## Two packages, one API
+
+Paper Shaders is split into two npm packages so you only pull in what your stack needs.
+
+| Package | Use case |
+|---|---|
+| `@paper-design/shaders` | Vanilla JS, any framework, or as a base for custom integrations |
+| `@paper-design/shaders-react` | React 18 and 19, with ready-made components and preset exports |
+
+Both packages share the same versioning and are always published together.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Zero dependencies" icon="feather">
+    Pure WebGL2 — no Three.js, no PIXI, no runtime overhead. Each shader is a self-contained GLSL fragment shader string.
+  </Card>
+  <Card title="Animated by default" icon="play">
+    Control speed, direction, and frame offset. Set `speed={0}` for a static, zero-cost render with no recurring rAF cost.
+  </Card>
+  <Card title="Fully typed" icon="code">
+    Every shader exposes TypeScript `Params` and `Uniforms` interfaces extracted directly from source.
+  </Card>
+  <Card title="SSR safe" icon="server">
+    Undefined uniforms are gracefully skipped during server-side rendering — no `window` or `document` errors at build time.
+  </Card>
+  <Card title="Image filters" icon="image">
+    Apply fluted glass, water distortion, dithering, heatmap, liquid metal, and halftone effects to any image.
+  </Card>
+  <Card title="Designed in Paper" icon="pen-nib">
+    Configure shaders visually in the Paper design tool and export directly to production-ready code.
+  </Card>
+</CardGroup>
+
+## Versioning
+
+Paper Shaders is in active development. Breaking changes ship under `0.0.x` versioning while the API stabilises.
+
+<Warning>
+  Pin your dependency to an exact version in `package.json`. Do not use `^` or `~` ranges until the library reaches `1.0.0`.
+
+  ```json
+  "@paper-design/shaders-react": "0.0.72"
+  ```
+</Warning>
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="React quickstart" icon="react" href="/quickstart-react">
+    Add your first shader to a React app in under two minutes.
+  </Card>
+  <Card title="Vanilla JS quickstart" icon="js" href="/quickstart-vanilla">
+    Use shaders in any framework — or no framework at all.
+  </Card>
+  <Card title="Browse shaders" icon="layer-group" href="/shaders/overview">
+    Explore all 28 shaders: gradients, noise, patterns, and image filters.
+  </Card>
+  <Card title="API reference" icon="book" href="/api/shader-mount-class">
+    Full TypeScript API for `ShaderMount`, sizing, and all shader parameters.
+  </Card>
+</CardGroup>
+
+## License
+
+Paper Shaders is released under the [PolyForm Shield](https://polyformproject.org/licenses/shield/1.0.0/) license. You may use it freely in commercial and non-commercial apps, products, and libraries, as long as your product does not compete with Paper or Paper Shaders.
+
+You may **not** use this code in a design tool or shader library that competes with Paper or Paper Shaders.
+
+Copyright Lost Coast Labs, Inc. ([paper.design](https://paper.design))

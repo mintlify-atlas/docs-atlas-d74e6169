@@ -1,0 +1,124 @@
+---
+title: "God Rays"
+description: "Animated rays of light radiating from the center, blended with up to 5 colors. The rays are adjustable by size, density, brightness and center glow. Great for dramatic backgrounds, logo reveals, and VFX like energy bursts or sun shafts."
+---
+
+Animated rays of light radiate outward from a central point, with each color layer independently rotated to build depth. A central glow shape adds a focal bloom, and a bloom/overlay color composites additively over the rays. Great for dramatic backgrounds, logo reveals, and VFX like energy bursts or sun shafts.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { GodRays } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <GodRays
+          colorBack="#000000"
+          colorBloom="#0000ff"
+          colors={['#a600ff6e', '#6200fff0', '#ffffff', '#33fff5']}
+          density={0.3}
+          spotty={0.3}
+          midIntensity={0.4}
+          midSize={0.2}
+          intensity={0.8}
+          bloom={0.4}
+          speed={0.75}
+          offsetY={-0.55}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      godRaysFragmentShader,
+      getShaderNoiseTexture,
+    } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, godRaysFragmentShader, {
+      u_colorBack: [0, 0, 0, 1],
+      u_colorBloom: [0, 0, 1, 1],
+      u_colors: [
+        [0.651, 0, 1, 0.431],
+        [0.384, 0, 1, 0.941],
+        [1, 1, 1, 1],
+        [0.200, 1, 0.961, 1],
+      ],
+      u_colorsCount: 4,
+      u_density: 0.3,
+      u_spotty: 0.3,
+      u_midIntensity: 0.4,
+      u_midSize: 0.2,
+      u_intensity: 0.8,
+      u_bloom: 0.4,
+      u_noiseTexture: getShaderNoiseTexture(),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorBack" type="string" default="#000000">
+  Background color behind the rays.
+</ParamField>
+
+<ParamField path="colorBloom" type="string" default="#0000ff">
+  Overlay color blended additively with the rays when `bloom` is greater than `0`.
+</ParamField>
+
+<ParamField path="colors" type="string[]" default='["#a600ff6e","#6200fff0","#ffffff","#33fff5"]'>
+  Array of up to 5 ray colors. Each color is applied to an independent ray layer.
+</ParamField>
+
+<ParamField path="density" type="number" default="0.3">
+  Number/density of rays. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="spotty" type="number" default="0.3">
+  Length of the rays. Higher values produce shorter, more spot-like rays. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="intensity" type="number" default="0.8">
+  Visibility/brightness of the rays. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="midSize" type="number" default="0.2">
+  Size of the circular glow at the center. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="midIntensity" type="number" default="0.4">
+  Brightness of the central glow. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="bloom" type="number" default="0.4">
+  Blend between alpha compositing (`0`) and additive blending (`1`) for the ray colors. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="0.75">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Static frame position when `speed` is `0`.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | Purple and cyan rays from below center |
+| `Warp` | Pink and orange rays with blue bloom |
+| `Linear` | Subtle white rays from upper right |
+| `Ether` | Sparse, spotty blue rays on dark background |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

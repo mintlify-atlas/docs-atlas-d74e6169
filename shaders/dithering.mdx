@@ -1,0 +1,120 @@
+---
+title: "Dithering"
+description: "Animated 2-color dithering over multiple pattern sources (noise, warp, dots, waves, ripple, swirl, sphere)."
+---
+
+Animated two-color dithering applied over one of seven pattern sources: simplex noise, warp, dots, sine wave, ripple, swirl, or a 3D sphere. The dithering matrix can be random, 2×2 Bayer, 4×4 Bayer, or 8×8 Bayer. Pixel size controls the resolution of the dithering grid.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { Dithering } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <Dithering
+          colorBack="#000000"
+          colorFront="#00b2ff"
+          shape="sphere"
+          type="4x4"
+          size={2}
+          speed={1}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      ditheringFragmentShader,
+      DitheringShapes,
+      DitheringTypes,
+    } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, ditheringFragmentShader, {
+      u_colorBack: [0, 0, 0, 1],
+      u_colorFront: [0, 0.698, 1, 1],
+      u_shape: DitheringShapes.sphere,  // 7
+      u_type: DitheringTypes['4x4'],    // 3
+      u_pxSize: 2,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorBack" type="string" default="#000000">
+  Background color (the darker dithered shade).
+</ParamField>
+
+<ParamField path="colorFront" type="string" default="#00b2ff">
+  Foreground color (the lighter dithered shade).
+</ParamField>
+
+<ParamField path="shape" type="string" default='"sphere"'>
+  Pattern source used as the input grayscale for dithering. See shape options below.
+</ParamField>
+
+<ParamField path="type" type="string" default='"4x4"'>
+  Dithering matrix type. See type options below.
+</ParamField>
+
+<ParamField path="size" type="number" default="2">
+  Pixel size of the dithering grid. Range: `0.5` to `20`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="1">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Static frame position when `speed` is `0`.
+</ParamField>
+
+## Shape options
+
+The `DitheringShapes` enum provides the available pattern sources:
+
+| Key | Value | Description |
+|-----|-------|-------------|
+| `simplex` | `1` | Animated simplex noise |
+| `warp` | `2` | Sinusoidal warp flow |
+| `dots` | `3` | Orbiting dot pattern |
+| `wave` | `4` | Sine wave |
+| `ripple` | `5` | Radial ripple |
+| `swirl` | `6` | Polar swirl |
+| `sphere` | `7` | Lit 3D sphere |
+
+## Type options
+
+The `DitheringTypes` enum provides the available dithering matrix types:
+
+| Key | Value | Description |
+|-----|-------|-------------|
+| `random` | `1` | Random noise dithering |
+| `2x2` | `2` | 2×2 ordered Bayer matrix |
+| `4x4` | `3` | 4×4 ordered Bayer matrix |
+| `8x8` | `4` | 8×8 ordered Bayer matrix |
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | Sphere with 4×4 Bayer, black and blue |
+| `Warp` | Warp flow with 4×4 Bayer, green on dark |
+| `Sine Wave` | Wave with 4×4 Bayer, cyan on magenta |
+| `Ripple` | Ripple with 2×2 Bayer, warm brown tones |
+| `Bugs` | Dots with random dithering, green on black |
+| `Swirl` | Swirl with 8×8 Bayer, blue on transparent |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

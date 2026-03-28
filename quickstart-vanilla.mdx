@@ -1,0 +1,187 @@
+---
+title: "Vanilla JS quickstart"
+description: "Use Paper Shaders in any JavaScript project without React"
+---
+
+The `@paper-design/shaders` package is framework-agnostic. It exports the `ShaderMount` class and all fragment shader strings, so you can integrate it with Vue, Svelte, Angular, or plain JavaScript.
+
+<Note>
+  Pin your dependency to an exact version. Paper Shaders ships breaking changes under `0.0.x` versioning while the API stabilises. Use `"@paper-design/shaders": "0.0.72"` in your `package.json`.
+</Note>
+
+<Steps>
+  <Step title="Install">
+    <CodeGroup>
+
+    ```bash npm
+    npm install @paper-design/shaders
+    ```
+
+    ```bash yarn
+    yarn add @paper-design/shaders
+    ```
+
+    ```bash pnpm
+    pnpm add @paper-design/shaders
+    ```
+
+    </CodeGroup>
+
+    The package has zero runtime dependencies and ships as an ES module.
+  </Step>
+
+  <Step title="Create the mount">
+    `ShaderMount` takes a parent `HTMLElement`, a fragment shader string, and an object of uniforms. It creates a `<canvas>` element inside the parent and starts the WebGL render loop.
+
+    ```ts
+    import {
+      ShaderMount,
+      meshGradientFragmentShader,
+      getShaderColorFromString,
+    } from '@paper-design/shaders';
+
+    // 1. Create a container element (or use an existing one)
+    const container = document.createElement('div');
+    container.style.width = '600px';
+    container.style.height = '400px';
+    document.body.appendChild(container);
+
+    // 2. Convert CSS hex colors to the vec4 format the shader expects
+    const colors = ['#e0eaff', '#241d9a', '#f75092', '#9f50d3'].map(
+      getShaderColorFromString
+    );
+
+    // 3. Instantiate ShaderMount
+    const shaderMount = new ShaderMount(
+      container,                  // parentElement: HTMLElement
+      meshGradientFragmentShader, // fragmentShader: string
+      {                           // uniforms: ShaderMountUniforms
+        u_colors: colors,
+        u_colorsCount: colors.length,
+        u_distortion: 0.8,
+        u_swirl: 0.1,
+        u_grainMixer: 0,
+        u_grainOverlay: 0,
+        u_fit: 1,         // 0 = none, 1 = contain, 2 = cover
+        u_scale: 1,
+        u_rotation: 0,
+        u_offsetX: 0,
+        u_offsetY: 0,
+        u_originX: 0.5,
+        u_originY: 0.5,
+        u_worldWidth: 0,
+        u_worldHeight: 0,
+      },
+      undefined,  // webGlContextAttributes?: WebGLContextAttributes
+      1,          // speed: number (0 = static, negatives play in reverse)
+      0,          // frame: number (starting time offset for deterministic output)
+      2,          // minPixelRatio: number (default 2)
+    );
+    ```
+
+    <Tip>
+      Pass `speed: 0` to render a static image with no animation loop running. The shader draws a single frame and stops, so there is no recurring performance cost.
+    </Tip>
+
+    The constructor signature in full:
+
+    ```ts
+    new ShaderMount(
+      parentElement: HTMLElement,
+      fragmentShader: string,
+      uniforms: ShaderMountUniforms,
+      webGlContextAttributes?: WebGLContextAttributes,
+      speed?: number,       // default 0
+      frame?: number,       // default 0
+      minPixelRatio?: number, // default 2
+      maxPixelCount?: number, // default 1920 * 1080 * 4
+      mipmaps?: string[],   // uniform names that need mipmaps, default []
+    )
+    ```
+  </Step>
+
+  <Step title="Update uniforms">
+    Call `setUniforms` at any time to change shader parameters. Only the uniforms you pass are updated — unchanged uniforms keep their current values.
+
+    ```ts
+    // Change colors and distortion after mount
+    const newColors = ['#aaa7d7', '#3c2b8e'].map(getShaderColorFromString);
+
+    shaderMount.setUniforms({
+      u_colors: newColors,
+      u_colorsCount: newColors.length,
+      u_distortion: 1,
+      u_swirl: 1,
+    });
+
+    // Change animation speed independently
+    shaderMount.setSpeed(0.6);
+    ```
+
+    `setSpeed` resumes or pauses the rAF loop automatically. Setting speed to `0` stops the loop; setting it to any non-zero value restarts it.
+  </Step>
+
+  <Step title="Clean up">
+    Call `dispose` when the shader is no longer needed. This cancels the animation loop, removes the canvas from the DOM, and releases the WebGL context.
+
+    ```ts
+    // In a component teardown, route change handler, etc.
+    shaderMount.dispose();
+    ```
+
+    <Warning>
+      Always call `dispose` when removing a shader from the page. Failing to do so leaks the WebGL context. Browsers limit the number of active WebGL contexts per page.
+    </Warning>
+  </Step>
+</Steps>
+
+## Complete working example
+
+The snippet below is self-contained and can be pasted into any ES module environment.
+
+```ts
+import {
+  ShaderMount,
+  meshGradientFragmentShader,
+  getShaderColorFromString,
+} from '@paper-design/shaders';
+
+function mountMeshGradient(container: HTMLElement): ShaderMount {
+  const hexColors = ['#e0eaff', '#241d9a', '#f75092', '#9f50d3'];
+  const colors = hexColors.map(getShaderColorFromString);
+
+  return new ShaderMount(
+    container,
+    meshGradientFragmentShader,
+    {
+      u_colors: colors,
+      u_colorsCount: colors.length,
+      u_distortion: 0.8,
+      u_swirl: 0.1,
+      u_grainMixer: 0,
+      u_grainOverlay: 0,
+      u_fit: 1,
+      u_scale: 1,
+      u_rotation: 0,
+      u_offsetX: 0,
+      u_offsetY: 0,
+      u_originX: 0.5,
+      u_originY: 0.5,
+      u_worldWidth: 0,
+      u_worldHeight: 0,
+    },
+    undefined,
+    1, // speed
+    0, // frame
+  );
+}
+
+// Mount
+const el = document.getElementById('shader-container')!;
+const shader = mountMeshGradient(el);
+
+// Tear down (e.g. on route change)
+// shader.dispose();
+```
+
+For the full list of `meshGradientFragmentShader` uniforms and sizing options, see the [MeshGradient reference](/shaders/mesh-gradient) and the [ShaderMount API reference](/api/shader-mount-class).

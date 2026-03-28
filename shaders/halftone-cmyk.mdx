@@ -1,0 +1,215 @@
+---
+title: "Halftone CMYK"
+description: "A halftone CMYK classic algo."
+---
+
+Halftone CMYK is an image filter shader that simulates the traditional four-color printing process. It decomposes an input image into Cyan, Magenta, Yellow, and Black ink channels, each rendered as an angled halftone screen. Dot shape, ink colors, cell size, contrast, grain, and per-channel flood/gain controls are all exposed.
+
+<Note>
+  This is an image filter shader — it requires an image input. In React, pass a URL string to the `image` prop and it is loaded automatically. In vanilla JS, pass a fully loaded `HTMLImageElement` to `u_image`.
+</Note>
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { HalftoneCmyk } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <HalftoneCmyk
+          image="/my-photo.jpg"
+          type="ink"
+          size={0.2}
+          contrast={1}
+          softness={1}
+          colorBack="#fbfaf5"
+          colorC="#00b4ff"
+          colorM="#fc519f"
+          colorY="#ffd800"
+          colorK="#231f20"
+          gridNoise={0.2}
+          floodC={0.15}
+          gainC={0.3}
+          gainY={0.2}
+          style={{ width: 600, height: 400 }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      halftoneCmykFragmentShader,
+      HalftoneCmykTypes,
+      getShaderNoiseTexture,
+    } from '@paper-design/shaders';
+
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.src = '/my-photo.jpg';
+
+    image.addEventListener('load', () => {
+      const container = document.querySelector('#canvas-container');
+
+      const shader = new ShaderMount(container, halftoneCmykFragmentShader, {
+        u_image: image,
+        u_noiseTexture: getShaderNoiseTexture(),
+        u_colorBack: [0.984, 0.98, 0.961, 1],
+        u_colorC: [0, 0.706, 1, 1],
+        u_colorM: [0.988, 0.318, 0.624, 1],
+        u_colorY: [1, 0.847, 0, 1],
+        u_colorK: [0.137, 0.122, 0.125, 1],
+        u_type: HalftoneCmykTypes.ink,
+        u_size: 0.2,
+        u_contrast: 1,
+        u_softness: 1,
+        u_grainSize: 0.5,
+        u_grainMixer: 0,
+        u_grainOverlay: 0,
+        u_gridNoise: 0.2,
+        u_floodC: 0.15,
+        u_floodM: 0,
+        u_floodY: 0,
+        u_floodK: 0,
+        u_gainC: 0.3,
+        u_gainM: 0,
+        u_gainY: 0.2,
+        u_gainK: 0,
+      });
+    });
+    ```
+
+    <Note>
+      The `HTMLImageElement` must be fully loaded before passing it to `ShaderMount`. Listen for the `load` event as shown above. The `u_noiseTexture` uniform is required — use `getShaderNoiseTexture()` from `@paper-design/shaders` to obtain it.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="image" type="string (React) | HTMLImageElement (vanilla JS)" required>
+  The source image to apply the CMYK halftone effect to. In React, pass a URL string — the component loads it automatically. In vanilla JS, pass a fully loaded `HTMLImageElement` as `u_image`.
+</ParamField>
+
+<ParamField path="type" type="HalftoneCmykType" default="'ink'">
+  Dot shape style. Use the `HalftoneCmykTypes` enum (vanilla JS) or string literal (React).
+
+  | Value | Description |
+  |---|---|
+  | `dots` | Separate circular dots |
+  | `ink` | Joined ink blobs |
+  | `sharp` | Hard-edge joined dots with direct pixel color sampling |
+</ParamField>
+
+<ParamField path="size" type="number" default="0.2">
+  Halftone cell size, controlling the density of the dot screen. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="contrast" type="number" default="1">
+  Image contrast adjustment applied before channel extraction. Range: `0` to `2`.
+</ParamField>
+
+<ParamField path="softness" type="number" default="1">
+  Edge softness of dots. `0` = hard, `1` = fully soft. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="'#fbfaf5'">
+  Paper (background) color visible between dots.
+</ParamField>
+
+<ParamField path="colorC" type="string" default="'#00b4ff'">
+  Cyan ink color.
+</ParamField>
+
+<ParamField path="colorM" type="string" default="'#fc519f'">
+  Magenta ink color.
+</ParamField>
+
+<ParamField path="colorY" type="string" default="'#ffd800'">
+  Yellow ink color.
+</ParamField>
+
+<ParamField path="colorK" type="string" default="'#231f20'">
+  Black (key) ink color.
+</ParamField>
+
+<ParamField path="gridNoise" type="number" default="0.2">
+  Strength of smooth noise applied to both dot positions and color sampling, producing an organic, hand-printed feel. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="floodC" type="number" default="0.15">
+  Flat cyan dot size adjustment applied uniformly across the image. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="floodM" type="number" default="0">
+  Flat magenta dot size adjustment. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="floodY" type="number" default="0">
+  Flat yellow dot size adjustment. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="floodK" type="number" default="0">
+  Flat black dot size adjustment. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="gainC" type="number" default="0.3">
+  Proportional cyan dot size gain — enhances existing dots proportionally. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="gainM" type="number" default="0">
+  Proportional magenta dot size gain. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="gainY" type="number" default="0.2">
+  Proportional yellow dot size gain. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="gainK" type="number" default="0">
+  Proportional black dot size gain. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="grainSize" type="number" default="0.5">
+  Scale of the grain texture applied to both dot edges and the overlay. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="grainMixer" type="number" default="0">
+  Strength of grain distortion affecting dot sizes. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="grainOverlay" type="number" default="0">
+  Post-processing black/white grain overlay strength. Range: `0` to `1`.
+</ParamField>
+
+## Presets
+
+The following presets are exported from `@paper-design/shaders-react`:
+
+| Export | Name | Description |
+|---|---|---|
+| `defaultPreset` | Default | Ink type, tight grid, classic CMYK colors |
+| `dropsPreset` | Drops | Large ink drops with heavy grid noise |
+| `newspaper` | Newspaper | Fine dots, boosted contrast, monochrome inks |
+| `vintagePreset` | Vintage | Sharp type, muted vintage CMYK palette |
+
+```ts
+import { halftoneCmykPresets } from '@paper-design/shaders-react';
+```
+
+## Enums
+
+Import `HalftoneCmykTypes` from `@paper-design/shaders` when using the vanilla JS API:
+
+```ts
+import { HalftoneCmykTypes } from '@paper-design/shaders';
+
+// HalftoneCmykTypes: dots | ink | sharp
+```
+
+<Tip>
+  The `u_noiseTexture` uniform is required by the vanilla JS API. Import and call `getShaderNoiseTexture()` from `@paper-design/shaders` to obtain the pre-built noise texture the CMYK shader depends on.
+</Tip>

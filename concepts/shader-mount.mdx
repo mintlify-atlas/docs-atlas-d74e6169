@@ -1,0 +1,223 @@
+---
+title: "ShaderMount"
+description: "The core class that mounts a WebGL shader onto a DOM element"
+---
+
+`ShaderMount` is the foundational vanilla JavaScript class in Paper Shaders. It creates a `<canvas>` element inside a parent `<div>`, compiles and runs a WebGL2 fragment shader, and keeps the canvas sized to match the container via `ResizeObserver`.
+
+Every higher-level component — whether a named shader like `MeshGradient` or the React `ShaderMount` wrapper — is built on top of this class.
+
+## Constructor
+
+```ts
+new ShaderMount(
+  parentElement,
+  fragmentShader,
+  uniforms,
+  webGlContextAttributes?,
+  speed?,
+  frame?,
+  minPixelRatio?,
+  maxPixelCount?,
+  mipmaps?
+)
+```
+
+<ParamField path="parentElement" type="HTMLElement" required>
+  The `<div>` element to mount the shader into. A `<canvas>` is prepended into this element and sized to fill it. Must be a valid DOM element — the constructor throws if it is not.
+</ParamField>
+
+<ParamField path="fragmentShader" type="string" required>
+  The GLSL ES 3.0 fragment shader source. Every built-in shader (e.g. `meshGradientFragmentShader`) is a plain string you can pass here.
+</ParamField>
+
+<ParamField path="uniforms" type="ShaderMountUniforms" required>
+  An object of uniform values to pass to the shader. Values can be `boolean`, `number`, `number[]`, `number[][]`, or `HTMLImageElement`. `undefined` values are skipped (useful for SSR).
+</ParamField>
+
+<ParamField path="webGlContextAttributes" type="WebGLContextAttributes">
+  Optional attributes forwarded to `canvas.getContext('webgl2', ...)`. Use this to control things like `premultipliedAlpha` or `preserveDrawingBuffer`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="0">
+  Animation speed multiplier applied to delta time each frame. `1` is normal speed, `0` stops animation entirely and cancels the `requestAnimationFrame` loop (no recurring cost), negative values play in reverse.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Starting offset for `u_time` in milliseconds. Use this to give the shader a deterministic starting frame — useful for snapshots, SSR, and testing.
+</ParamField>
+
+<ParamField path="minPixelRatio" type="number" default="2">
+  The minimum pixel ratio to render at. Defaults to `2` so shaders are rendered at 2× even on 1× screens, which improves antialiasing. Reduce for performance, increase (paired with `maxPixelCount`) for quality.
+</ParamField>
+
+<ParamField path="maxPixelCount" type="number" default="8294400">
+  The maximum number of physical pixels to render. Defaults to `1920 × 1080 × 4` (≈ 8.3 million pixels). The canvas can be larger in CSS, but rendering is capped here to prevent GPU overload.
+</ParamField>
+
+<ParamField path="mipmaps" type="string[]" default="[]">
+  Names of texture uniforms that should have mipmaps generated. Mipmaps improve quality when the texture is displayed at a smaller size than its natural resolution.
+</ParamField>
+
+## Automatic canvas sizing
+
+When constructed, `ShaderMount` prepends a `<canvas>` into the parent element and attaches a `ResizeObserver` to it. Whenever the container changes size, the canvas dimensions are updated and `u_resolution` and `u_pixelRatio` uniforms are refreshed automatically.
+
+The class also listens to `visualViewport` resize events to react correctly to pinch zoom and browser zoom changes.
+
+## Public methods
+
+### `setUniforms(newUniforms)`
+
+```ts
+mount.setUniforms({ u_distortion: 0.5, u_scale: 1.2 });
+```
+
+Update shader uniforms at any time. Accepts a partial object — only the keys you provide are updated. Triggers an immediate re-render. Unchanged uniform values are skipped via an internal cache.
+
+### `setSpeed(newSpeed)`
+
+```ts
+mount.setSpeed(2);   // double speed
+mount.setSpeed(-1);  // play in reverse
+mount.setSpeed(0);   // pause, cancels rAF loop
+```
+
+Change the animation speed after construction. Setting `0` cancels the `requestAnimationFrame` loop so there is no recurring performance cost.
+
+### `setFrame(newFrame)`
+
+```ts
+mount.setFrame(3000); // jump to the 3-second mark
+```
+
+Jump to a specific animation frame (in milliseconds from time zero). Triggers an immediate re-render.
+
+### `setMaxPixelCount(newMaxPixelCount?)`
+
+```ts
+mount.setMaxPixelCount(1920 * 1080); // cap at 1080p
+```
+
+Dynamically update the maximum pixel count. Triggers a resize recalculation. Omit the argument to restore the default of `8,294,400`.
+
+### `setMinPixelRatio(newMinPixelRatio?)`
+
+```ts
+mount.setMinPixelRatio(1); // match the device pixel ratio exactly
+```
+
+Dynamically update the minimum pixel ratio. Triggers a resize recalculation. Omit the argument to restore the default of `2`.
+
+### `getCurrentFrame()`
+
+```ts
+const ms = mount.getCurrentFrame(); // total animation ms played
+```
+
+Returns the total milliseconds of animation time that have elapsed, accounting for pauses and tab-hidden periods.
+
+### `dispose()`
+
+```ts
+mount.dispose();
+```
+
+Tears down the shader: cancels the animation loop, deletes all WebGL resources and textures, disconnects the `ResizeObserver`, removes event listeners, and removes the `<canvas>` from the DOM. Always call this when you're done with the shader to avoid memory leaks.
+
+## The `PaperShaderElement` interface
+
+When `ShaderMount` is constructed, it marks the parent `<div>` in two ways:
+
+- Sets the `data-paper-shader` attribute (used by the bundled CSS reset to position the canvas).
+- Attaches the `ShaderMount` instance to `parentElement.paperShaderMount` for easy programmatic access.
+
+```ts
+import { isPaperShaderElement } from '@paper-design/shaders';
+
+const div = document.querySelector('#my-shader');
+if (isPaperShaderElement(div)) {
+  div.paperShaderMount?.setSpeed(0); // pause
+}
+```
+
+The `isPaperShaderElement` helper narrows an `HTMLElement` to `PaperShaderElement` so TypeScript understands the `paperShaderMount` property.
+
+## Vanilla JS example
+
+```ts
+import { ShaderMount, meshGradientFragmentShader, ShaderFitOptions } from '@paper-design/shaders';
+
+const container = document.getElementById('shader-container');
+
+const mount = new ShaderMount(
+  container,
+  meshGradientFragmentShader,
+  {
+    u_colors: [[0.88, 0.92, 1, 1], [0.14, 0.11, 0.6, 1]],
+    u_colorsCount: 2,
+    u_distortion: 0.8,
+    u_swirl: 0.1,
+    u_grainMixer: 0,
+    u_grainOverlay: 0,
+    u_fit: ShaderFitOptions['contain'],
+    u_scale: 1,
+    u_rotation: 0,
+    u_offsetX: 0,
+    u_offsetY: 0,
+    u_originX: 0.5,
+    u_originY: 0.5,
+    u_worldWidth: 0,
+    u_worldHeight: 0,
+  },
+  undefined, // webGlContextAttributes
+  1,         // speed
+  0,         // frame
+);
+
+// Later, clean up:
+mount.dispose();
+```
+
+## React wrapper
+
+The React `ShaderMount` from `@paper-design/shaders-react` wraps the vanilla class in a `forwardRef` component. It:
+
+- Initialises the vanilla `ShaderMount` in a `useEffect`.
+- Calls `setUniforms`, `setSpeed`, `setFrame`, `setMaxPixelCount`, and `setMinPixelRatio` via effects whenever the corresponding props change.
+- Accepts string values for image uniforms and automatically fetches and loads them as `HTMLImageElement` objects.
+- Forwards a `ref` to the parent `PaperShaderElement` div.
+
+```tsx
+import { ShaderMount } from '@paper-design/shaders-react';
+import { meshGradientFragmentShader, ShaderFitOptions } from '@paper-design/shaders';
+
+export function MyShader() {
+  return (
+    <ShaderMount
+      style={{ width: '100%', height: '400px' }}
+      fragmentShader={meshGradientFragmentShader}
+      speed={1}
+      uniforms={{
+        u_colors: [[0.88, 0.92, 1, 1], [0.14, 0.11, 0.6, 1]],
+        u_colorsCount: 2,
+        u_distortion: 0.8,
+        u_swirl: 0.1,
+        u_grainMixer: 0,
+        u_grainOverlay: 0,
+        u_fit: ShaderFitOptions['contain'],
+        u_scale: 1,
+        u_rotation: 0,
+        u_offsetX: 0,
+        u_offsetY: 0,
+        u_originX: 0.5,
+        u_originY: 0.5,
+        u_worldWidth: 0,
+        u_worldHeight: 0,
+      }}
+    />
+  );
+}
+```
+
+In practice you will typically use a named shader component like `<MeshGradient>` rather than `<ShaderMount>` directly. Named components handle the uniform mapping for you.

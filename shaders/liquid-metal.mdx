@@ -1,0 +1,215 @@
+---
+title: "Liquid Metal"
+description: "Futuristic liquid metal material applied to uploaded logo or one of pre-defined abstract shape."
+---
+
+Liquid Metal applies a fluid animated chrome-like material over an uploaded logo or one of several built-in abstract shapes. Animated stripes are distorted along the shape edges to create the illusion of reflective liquid metal in motion.
+
+<Note>
+  When using a custom image, this shader requires a preprocessing step. The `toProcessedLiquidMetal` helper encodes edge gradient data needed by the GPU. The React component handles this automatically. In vanilla JS, call `toProcessedLiquidMetal` yourself and pass the result as `u_image`.
+</Note>
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { LiquidMetal } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <LiquidMetal
+          image="/my-logo.svg"
+          speed={1}
+          shape="diamond"
+          colorBack="#AAAAAC"
+          colorTint="#ffffff"
+          repetition={2}
+          softness={0.1}
+          distortion={0.07}
+          contour={0.4}
+          shiftRed={0.3}
+          shiftBlue={0.3}
+          angle={70}
+          style={{ width: 400, height: 400 }}
+        />
+      );
+    }
+    ```
+
+    The React component calls `toProcessedLiquidMetal` internally and re-runs it whenever `image` changes. Use `suspendWhenProcessingImage` to integrate with React Suspense:
+
+    ```tsx
+    <Suspense fallback={<div>Processing...</div>}>
+      <LiquidMetal image="/my-logo.svg" suspendWhenProcessingImage />
+    </Suspense>
+    ```
+
+    To use a built-in shape instead of an image, omit `image` and set `shape`:
+
+    ```tsx
+    <LiquidMetal shape="circle" />
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      liquidMetalFragmentShader,
+      toProcessedLiquidMetal,
+      LiquidMetalShapes,
+      getShaderColorFromString,
+    } from '@paper-design/shaders';
+
+    async function init() {
+      const { pngBlob } = await toProcessedLiquidMetal('/my-logo.svg');
+      const processedUrl = URL.createObjectURL(pngBlob);
+
+      const processedImage = new Image();
+      processedImage.src = processedUrl;
+
+      processedImage.addEventListener('load', () => {
+        const container = document.querySelector('#canvas-container');
+
+        const shader = new ShaderMount(container, liquidMetalFragmentShader, {
+          u_image: processedImage,
+          u_isImage: true,
+          u_colorBack: [0.667, 0.667, 0.675, 1],
+          u_colorTint: [1, 1, 1, 1],
+          u_repetition: 2,
+          u_softness: 0.1,
+          u_distortion: 0.07,
+          u_contour: 0.4,
+          u_shiftRed: 0.3,
+          u_shiftBlue: 0.3,
+          u_angle: 70,
+          u_shape: LiquidMetalShapes.diamond,
+        });
+      });
+    }
+
+    init();
+    ```
+
+    To use a built-in shape without an image:
+
+    ```ts
+    const shader = new ShaderMount(container, liquidMetalFragmentShader, {
+      u_isImage: false,
+      u_shape: LiquidMetalShapes.circle,
+      u_colorBack: [0.667, 0.667, 0.675, 1],
+      u_colorTint: [1, 1, 1, 1],
+      // ...other uniforms
+    });
+    ```
+
+    <Note>
+      The `HTMLImageElement` returned by `toProcessedLiquidMetal` must be fully loaded before passing it to `ShaderMount`. Listen for the `load` event as shown above.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="image" type="string (React) | HTMLImageElement (vanilla JS)">
+  Optional logo or shape image. In React, pass a URL string. In vanilla JS, pass the pre-processed `HTMLImageElement` returned by `toProcessedLiquidMetal`. When omitted, the `shape` prop selects a built-in abstract shape.
+</ParamField>
+
+<ParamField path="shape" type="LiquidMetalShape" default="'diamond'">
+  Built-in shape used when no `image` is provided. Use the `LiquidMetalShapes` enum (vanilla JS) or string literal (React).
+
+  | Value | Description |
+  |---|---|
+  | `none` | Full canvas fill |
+  | `circle` | Circle |
+  | `daisy` | Organic daisy/flower |
+  | `diamond` | Diamond |
+  | `metaballs` | Animated metaballs |
+</ParamField>
+
+<ParamField path="speed" type="number" default="1">
+  Animation playback speed multiplier.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="'#AAAAAC'">
+  Background color shown outside the shape.
+</ParamField>
+
+<ParamField path="colorTint" type="string" default="'#ffffff'">
+  Overlay tint color blended into the metal using a color-burn blend mode.
+</ParamField>
+
+<ParamField path="repetition" type="number" default="2">
+  Density of pattern stripes. Range: `1` to `10`.
+</ParamField>
+
+<ParamField path="softness" type="number" default="0.1">
+  Color transition sharpness. `0` = hard edge, `1` = smooth gradient.
+</ParamField>
+
+<ParamField path="distortion" type="number" default="0.07">
+  Noise distortion applied over the stripe pattern. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="contour" type="number" default="0.4">
+  Strength of distortion at the shape edges. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="shiftRed" type="number" default="0.3">
+  Red channel dispersion (chromatic aberration). Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="shiftBlue" type="number" default="0.3">
+  Blue channel dispersion (chromatic aberration). Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="angle" type="number" default="70">
+  Direction of pattern animation in degrees. Range: `0` to `360`.
+</ParamField>
+
+<ParamField path="suspendWhenProcessingImage" type="boolean" default="false">
+  React only. When `true`, the component suspends while `toProcessedLiquidMetal` is running. Wrap in a `<Suspense>` boundary to provide a fallback.
+</ParamField>
+
+## Presets
+
+The following presets are exported from `@paper-design/shaders-react`:
+
+| Export | Name | Description |
+|---|---|---|
+| `defaultPreset` | Default | Silver diamond with red/blue shift |
+| `noirPreset` | Noir | Black background, no chromatic shift |
+| `fullScreenPreset` | Backdrop | Full-canvas fill mode |
+| `stripesPreset` | Stripes | High-repetition color-tinted stripes on circle |
+
+```ts
+import { liquidMetalPresets } from '@paper-design/shaders-react';
+```
+
+## `toProcessedLiquidMetal` helper
+
+`toProcessedLiquidMetal` performs a CPU-side Poisson solve to generate the edge gradient texture the shader requires:
+
+```ts
+import { toProcessedLiquidMetal } from '@paper-design/shaders';
+
+const { pngBlob, imageData } = await toProcessedLiquidMetal('/my-logo.svg');
+// or pass a File object:
+const { pngBlob, imageData } = await toProcessedLiquidMetal(file);
+```
+
+The returned `pngBlob` encodes:
+- **R channel** — edge gradient (Poisson solution)
+- **G channel** — original image alpha
+
+Pass `pngBlob` as an object URL loaded into an `HTMLImageElement`, or use the React component which handles this automatically.
+
+## Enums
+
+Import `LiquidMetalShapes` from `@paper-design/shaders` when using the vanilla JS API:
+
+```ts
+import { LiquidMetalShapes } from '@paper-design/shaders';
+
+// LiquidMetalShapes: none | circle | daisy | diamond | metaballs
+```

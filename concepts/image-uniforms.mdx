@@ -1,0 +1,151 @@
+---
+title: "Image uniforms"
+description: "Pass images to image-filter shaders"
+---
+
+Several shaders in Paper Shaders act as image filters — they take an input image and transform it. Examples include `FlutedGlass`, `Water`, `ImageDithering`, `HalftoneDots`, `HalftoneCmyk`, and `LiquidMetal`.
+
+These shaders expose an `image` prop (React) or a texture uniform (vanilla JS) that you use to supply the source image.
+
+## Aspect ratio uniform
+
+When you provide an image uniform, `ShaderMount` automatically calculates the image's aspect ratio (`naturalWidth / naturalHeight`) and sets it on a companion uniform named `<uniformName>AspectRatio`. For the standard `u_image` uniform this becomes `u_imageAspectRatio`. Shaders use this value internally to correctly scale and position the image — you never need to set it manually.
+
+## React: pass a URL string
+
+In React, image uniforms accept a **URL string**. The `ShaderMount` wrapper fetches and loads the image before passing the resulting `HTMLImageElement` to the underlying WebGL program.
+
+```tsx
+import { FlutedGlass } from '@paper-design/shaders-react';
+
+export function GlassFilter() {
+  return (
+    <FlutedGlass
+      style={{ width: 800, height: 600 }}
+      image="/photos/landscape.jpg"
+      fit="cover"
+      speed={0}
+    />
+  );
+}
+```
+
+External URLs (those with a different origin than the current page) automatically receive `crossOrigin="anonymous"` so they can be uploaded to a WebGL texture without triggering a CORS error.
+
+### Empty string
+
+Passing an empty string (`image=""`) is valid. It is treated as a 1×1 transparent pixel, so the shader renders without an image. This is the default value for image props.
+
+```tsx
+// Renders without an image — shows the colorBack background
+<FlutedGlass style={{ width: 400, height: 400 }} image="" speed={0} />
+```
+
+## Vanilla JS: pass a loaded `HTMLImageElement`
+
+In vanilla JS, you must pass a **fully loaded** `HTMLImageElement`. The image must have finished loading before you supply it as a uniform — `ShaderMount` throws an error if you pass an image that is not yet complete.
+
+<Warning>
+  The vanilla `ShaderMount` does **not** fetch or load images for you. Always ensure the image's `complete` property is `true` and `naturalWidth` is non-zero before passing it. Construct the `HTMLImageElement`, set its `src`, and wait for the `load` event.
+</Warning>
+
+```ts
+import {
+  ShaderMount,
+  flutedGlassFragmentShader,
+  ShaderFitOptions,
+  defaultObjectSizing,
+} from '@paper-design/shaders';
+
+function mountGlassShader(container: HTMLElement, imageSrc: string) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+
+  img.onload = () => {
+    new ShaderMount(
+      container,
+      flutedGlassFragmentShader,
+      {
+        u_image: img,                         // fully loaded image
+        u_colorBack: [0, 0, 0, 0],
+        u_colorShadow: [0, 0, 0, 1],
+        u_colorHighlight: [1, 1, 1, 1],
+        u_shadows: 0.25,
+        u_size: 0.5,
+        u_angle: 0,
+        u_distortion: 0.5,
+        u_shift: 0,
+        u_blur: 0,
+        u_edges: 0.25,
+        u_stretch: 0,
+        u_distortionShape: 1,
+        u_highlights: 0.1,
+        u_shape: 1,
+        u_marginLeft: 0,
+        u_marginRight: 0,
+        u_marginTop: 0,
+        u_marginBottom: 0,
+        u_grainMixer: 0,
+        u_grainOverlay: 0,
+        u_fit: ShaderFitOptions['cover'],
+        u_scale: 1,
+        u_rotation: 0,
+        u_offsetX: 0,
+        u_offsetY: 0,
+        u_originX: defaultObjectSizing.originX,
+        u_originY: defaultObjectSizing.originY,
+        u_worldWidth: 0,
+        u_worldHeight: 0,
+      },
+      undefined,
+      0, // speed
+    );
+  };
+
+  img.src = imageSrc;
+}
+```
+
+## Updating the image
+
+You can swap the image after construction using `setUniforms`. In React this happens automatically whenever the `image` prop changes.
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { useState } from 'react';
+    import { FlutedGlass } from '@paper-design/shaders-react';
+
+    const images = ['/photos/a.jpg', '/photos/b.jpg', '/photos/c.jpg'];
+
+    export function ImageSwitcher() {
+      const [index, setIndex] = useState(0);
+
+      return (
+        <>
+          <FlutedGlass
+            style={{ width: 800, height: 600 }}
+            image={images[index]}
+            fit="cover"
+            speed={0}
+          />
+          <button onClick={() => setIndex(i => (i + 1) % images.length)}>
+            Next image
+          </button>
+        </>
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    // Load the new image, then call setUniforms
+    const newImg = new Image();
+    newImg.crossOrigin = 'anonymous';
+    newImg.onload = () => {
+      mount.setUniforms({ u_image: newImg });
+    };
+    newImg.src = '/photos/b.jpg';
+    ```
+  </Tab>
+</Tabs>

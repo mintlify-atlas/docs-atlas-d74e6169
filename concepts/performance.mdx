@@ -1,0 +1,136 @@
+---
+title: "Performance"
+description: "Maximize shader performance in production"
+---
+
+Paper Shaders is designed to be fast by default, with several built-in safeguards that prevent common performance pitfalls. This page explains those defaults and the knobs available to tune them for your use case.
+
+## Pixel budget controls
+
+### `minPixelRatio` (default: `2`)
+
+`minPixelRatio` sets the floor for the render scale. Even on a 1× display (where `window.devicePixelRatio` is `1`), shaders render at 2× by default. This gives smoother edges and better antialiasing without requiring the user to be on a high-DPI screen.
+
+Reduce `minPixelRatio` to `1` if you need to save GPU fill-rate on large canvases or on lower-end devices.
+
+```tsx
+// React — match the device pixel ratio exactly, no upscaling
+<MeshGradient
+  style={{ width: '100%', height: 400 }}
+  minPixelRatio={1}
+  speed={1}
+/>
+```
+
+```ts
+// Vanilla JS — set at construction time
+const mount = new ShaderMount(container, shader, uniforms, undefined, 1, 0, 1);
+
+// Or update dynamically at any time
+mount.setMinPixelRatio(1);
+```
+
+### `maxPixelCount` (default: `8,294,400`)
+
+`maxPixelCount` caps the total number of physical pixels rendered, regardless of how large the canvas is on screen. The default is `1920 × 1080 × 4` — roughly a 4K screen's worth of pixels.
+
+When the canvas would exceed this limit, the shader is rendered at a lower resolution and upscaled by CSS. The canvas can still be any size in the DOM; it just loses quality beyond the cap rather than crashing the GPU.
+
+```tsx
+// React — cap at 1080p to limit GPU work on very large canvases
+<MeshGradient
+  style={{ width: '100vw', height: '100vh' }}
+  maxPixelCount={1920 * 1080}
+  speed={1}
+/>
+```
+
+```ts
+// Vanilla JS — set at construction time
+const mount = new ShaderMount(
+  container,
+  shader,
+  uniforms,
+  undefined,
+  1,   // speed
+  0,   // frame
+  2,   // minPixelRatio
+  1920 * 1080, // maxPixelCount
+);
+
+// Or update dynamically
+mount.setMaxPixelCount(1920 * 1080);
+```
+
+<Tip>
+  Both `setMinPixelRatio` and `setMaxPixelCount` trigger an immediate resize recalculation. You can call them at any point in response to user interactions, device capability detection, or visibility changes.
+</Tip>
+
+## Zero-cost static shaders
+
+Set `speed={0}` (or `speed: 0` in the constructor) to render the shader once and stop. When speed is `0` the `requestAnimationFrame` loop is cancelled completely — the shader consumes no CPU or GPU time beyond the initial paint.
+
+<Note>
+  A shader with `speed={0}` is as cheap as a static image after the first frame. Use it for decorative backgrounds, loading screens, or anything that doesn't need to animate.
+</Note>
+
+```tsx
+// React — static, zero recurring cost
+<MeshGradient
+  style={{ width: 600, height: 400 }}
+  speed={0}
+  frame={2500}  // pick a visually appealing frame
+/>
+```
+
+```ts
+// Vanilla JS
+const mount = new ShaderMount(container, shader, uniforms, undefined, 0);
+// rAF is never scheduled; nothing runs after the first render
+```
+
+## Automatic tab pausing
+
+`ShaderMount` listens to `document.visibilitychange`. When the browser tab is hidden, the animation loop is paused automatically. When the tab becomes visible again, it resumes from the same point. This requires no configuration and applies to all shaders.
+
+## Tree-shaking
+
+The `@paper-design/shaders` package declares `"sideEffects": false` in its `package.json`. Bundlers (Vite, webpack, Rollup, etc.) can tree-shake unused exports, so only the shader modules you import end up in your bundle.
+
+```ts
+// Only meshGradientFragmentShader is included in the bundle
+import { meshGradientFragmentShader } from '@paper-design/shaders';
+```
+
+## Browser support
+
+<Warning>
+  Paper Shaders requires **WebGL2**. If `canvas.getContext('webgl2')` returns `null`, the `ShaderMount` constructor throws:
+
+  ```
+  Paper Shaders: WebGL is not supported in this browser
+  ```
+
+  Wrap construction in a `try/catch` if you need to gracefully degrade:
+
+  ```ts
+  try {
+    const mount = new ShaderMount(container, shader, uniforms);
+  } catch (e) {
+    // WebGL2 not available — show a fallback
+    container.style.background = '#e0eaff';
+  }
+  ```
+
+  WebGL2 is supported in all major desktop and mobile browsers as of 2024. The main exception is older iOS versions (before iOS 15) and some older Android WebViews.
+</Warning>
+
+## Summary
+
+| Concern | Default | How to tune |
+|---|---|---|
+| Antialiasing quality | `minPixelRatio: 2` | Reduce to `1` for performance |
+| Large canvas GPU cost | `maxPixelCount: 8,294,400` | Reduce to `1920 * 1080` or lower |
+| Recurring CPU/GPU cost | Animated by default | Set `speed={0}` for static shaders |
+| Hidden-tab waste | Auto-paused | Nothing to configure |
+| Bundle size | Tree-shakeable | Import only what you use |

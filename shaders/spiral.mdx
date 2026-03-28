@@ -1,0 +1,118 @@
+---
+title: "Spiral"
+description: "A single-colored animated spiral that morphs across a wide range of shapes - from crisp, thin-lined geometry to flowing whirlpool forms and wavy, abstract rings."
+---
+
+A single-colored animated spiral that morphs across a wide range of shapes — from crisp, thin-lined geometry to flowing whirlpool forms and wavy, abstract rings. Density controls a perspective-like falloff of the spiral arms, and distortion adds a phase-shift wave along the arms. Noise overlay adds organic variation to the stroke.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { Spiral } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <Spiral
+          colorBack="#001429"
+          colorFront="#79D1FF"
+          density={1}
+          distortion={0}
+          strokeWidth={0.5}
+          strokeTaper={0}
+          strokeCap={0}
+          noise={0}
+          noiseFrequency={0}
+          softness={0}
+          speed={1}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, spiralFragmentShader } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, spiralFragmentShader, {
+      u_colorBack: [0, 0.078, 0.161, 1],
+      u_colorFront: [0.475, 0.820, 1, 1],
+      u_density: 1,
+      u_distortion: 0,
+      u_strokeWidth: 0.5,
+      u_strokeTaper: 0,
+      u_strokeCap: 0,
+      u_noise: 0,
+      u_noiseFrequency: 0,
+      u_softness: 0,
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorBack" type="string" default="#001429">
+  Background color.
+</ParamField>
+
+<ParamField path="colorFront" type="string" default="#79D1FF">
+  Foreground (spiral ink) color.
+</ParamField>
+
+<ParamField path="density" type="number" default="1">
+  Spacing falloff that simulates perspective. `0` = flat spiral, `1` = maximum density falloff. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="distortion" type="number" default="0">
+  Power of wave-based shape distortion along the spiral arms. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="strokeWidth" type="number" default="0.5">
+  Thickness of the spiral curve. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="strokeTaper" type="number" default="0">
+  Stroke width taper along the spiral. Positive = fades away from center, negative = grows away from center, `0` = uniform. Range: `-1` to `1`.
+</ParamField>
+
+<ParamField path="strokeCap" type="number" default="0">
+  Extra stroke width at the center. Has no effect when `strokeWidth` is `0.5`. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="noise" type="number" default="0">
+  Noise distortion applied over the canvas. Has no effect when `noiseFrequency` is `0`. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="noiseFrequency" type="number" default="0">
+  Noise frequency. Has no effect when `noise` is `0`. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="softness" type="number" default="0">
+  Edge softness of the spiral stroke. `0` = hard edge, `1` = fully feathered. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="1">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Static frame position when `speed` is `0`.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | Clean blue spiral on dark navy |
+| `Jungle` | Noise-warped green spiral |
+| `Droplet` | Tapered spiral with noise, pink on white |
+| `Swirl` | Low-density soft-edged swirl |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

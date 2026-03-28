@@ -1,0 +1,141 @@
+---
+title: "Utilities"
+description: "Helper functions exported from @paper-design/shaders"
+---
+
+## getShaderColorFromString
+
+```ts
+function getShaderColorFromString(
+  color: string | [number, number, number] | [number, number, number, number] | undefined
+): [number, number, number, number]
+```
+
+Converts a CSS color value into a normalized `[r, g, b, a]` tuple where each channel is in the `0`–`1` range. This is the format expected by shader `vec4` color uniforms.
+
+### Supported input formats
+
+| Format | Example |
+|---|---|
+| 3-digit hex | `'#f0f'` |
+| 6-digit hex | `'#6366f1'` |
+| 8-digit hex (with alpha) | `'#6366f1cc'` |
+| `rgb()` | `'rgb(99, 102, 241)'` |
+| `rgba()` | `'rgba(99, 102, 241, 0.8)'` |
+| `hsl()` | `'hsl(239, 84%, 67%)'` |
+| `hsla()` | `'hsla(239, 84%, 67%, 0.8)'` |
+| `[r, g, b]` array | `[0.39, 0.40, 0.95]` (already normalized) |
+| `[r, g, b, a]` array | `[0.39, 0.40, 0.95, 1]` (already normalized) |
+
+If the input is `undefined` or an unrecognized format, the function returns `[0, 0, 0, 1]` (opaque black) and logs a console error.
+
+### Usage
+
+```ts
+import { getShaderColorFromString } from '@paper-design/shaders';
+
+// From a hex string
+const color = getShaderColorFromString('#6366f1');
+// → [0.388, 0.400, 0.945, 1]
+
+// From an rgba string
+const colorWithAlpha = getShaderColorFromString('rgba(99, 102, 241, 0.5)');
+// → [0.388, 0.400, 0.945, 0.5]
+
+// From an hsl string
+const hslColor = getShaderColorFromString('hsl(239, 84%, 67%)');
+// → [approx 0.388, 0.400, 0.945, 1]
+
+// Pass directly as a shader uniform
+shader.setUniforms({
+  u_color: getShaderColorFromString('#f43f5e'),
+});
+```
+
+### With ShaderMount (vanilla)
+
+```ts
+import { ShaderMount, getShaderColorFromString } from '@paper-design/shaders';
+
+const shader = new ShaderMount(container, fragmentShader, {
+  u_colorA: getShaderColorFromString('#e0eaff'),
+  u_colorB: getShaderColorFromString('#6366f1'),
+});
+```
+
+### With React components
+
+The built-in React shader components call `getShaderColorFromString` internally on all color props, so you can pass CSS strings directly:
+
+```tsx
+<MeshGradient colors={['#e0eaff', '#6366f1', '#f43f5e']} />
+```
+
+You only need to call `getShaderColorFromString` yourself when using `ShaderMount` directly or building a custom shader.
+
+---
+
+## getShaderNoiseTexture
+
+```ts
+function getShaderNoiseTexture(): HTMLImageElement | undefined
+```
+
+Returns an `HTMLImageElement` preloaded with a grayscale noise texture (a tileable PNG encoded as a base64 data URL). This texture is used internally by several shaders for grain and noise effects.
+
+Returns `undefined` when called in a server-side rendering environment (i.e. when `window` is not available).
+
+### Usage
+
+```ts
+import { ShaderMount, getShaderNoiseTexture } from '@paper-design/shaders';
+
+const noiseTexture = getShaderNoiseTexture();
+
+const shader = new ShaderMount(container, fragmentShader, {
+  u_noiseTexture: noiseTexture,
+});
+```
+
+<Note>
+The image is returned immediately with `img.src` set to the data URL. Browsers typically decode data URL images synchronously, but you should ensure the image is fully loaded before using it as a shader uniform. If you pass it to `ShaderMount` before it's loaded, the library will throw an error indicating the image must be fully loaded.
+</Note>
+
+---
+
+## emptyPixel
+
+```ts
+const emptyPixel: string
+// 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
+```
+
+A transparent 1×1 pixel GIF encoded as a base64 data URL. Used as the default value for image uniforms when no image has been provided yet — for example, in the React `ShaderMount` when a string uniform is an empty string.
+
+### Usage
+
+Use `emptyPixel` as a placeholder to keep your shader valid before a real image loads:
+
+```ts
+import { ShaderMount, emptyPixel } from '@paper-design/shaders';
+
+// Create an image element and use emptyPixel as the initial src
+const img = new Image();
+img.src = emptyPixel;
+
+const shader = new ShaderMount(container, fragmentShader, {
+  u_image: img,
+});
+
+// Later, update with the real image
+const realImage = new Image();
+realImage.crossOrigin = 'anonymous';
+realImage.onload = () => {
+  shader.setUniforms({ u_image: realImage });
+};
+realImage.src = '/path/to/image.jpg';
+```
+
+<Tip>
+In the React `ShaderMount`, string uniform values are treated as URLs and loaded as images automatically. An empty string is replaced with `emptyPixel` so the shader can initialize without errors while waiting for the real image.
+</Tip>

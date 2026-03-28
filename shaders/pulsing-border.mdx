@@ -1,0 +1,187 @@
+---
+title: "Pulsing Border"
+description: "Luminous trails of color merging into a glowing gradient frame."
+---
+
+Pulsing Border draws a glowing, animated border around a rounded rectangle. Up to 5 colors each produce independent luminous spots that orbit the border perimeter. A bloom parameter controls whether the spots blend normally or additively (creating a stronger glow), and optional smoke and pulse effects add further visual depth.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { PulsingBorder } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <PulsingBorder
+          colorBack="#000000"
+          colors={['#0dc1fd', '#d915ef', '#ff3f2ecc']}
+          roundness={0.25}
+          thickness={0.1}
+          softness={0.75}
+          intensity={0.2}
+          bloom={0.25}
+          spots={5}
+          spotSize={0.5}
+          pulse={0.25}
+          smoke={0.3}
+          smokeSize={0.6}
+          aspectRatio="auto"
+          marginLeft={0}
+          marginRight={0}
+          marginTop={0}
+          marginBottom={0}
+          scale={0.6}
+          speed={1}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, pulsingBorderFragmentShader, getShaderColorFromString, getShaderNoiseTexture, PulsingBorderAspectRatios, ShaderFitOptions } from '@paper-design/shaders';
+
+    const container = document.getElementById('shader-container');
+
+    const colors = ['#0dc1fd', '#d915ef', '#ff3f2ecc'];
+
+    const mount = new ShaderMount(container, pulsingBorderFragmentShader, {
+      u_colorBack: getShaderColorFromString('#000000'),
+      u_colors: colors.map(getShaderColorFromString),
+      u_colorsCount: colors.length,
+      u_roundness: 0.25,
+      u_thickness: 0.1,
+      u_softness: 0.75,
+      u_intensity: 0.2,
+      u_bloom: 0.25,
+      u_spots: 5,
+      u_spotSize: 0.5,
+      u_pulse: 0.25,
+      u_smoke: 0.3,
+      u_smokeSize: 0.6,
+      u_aspectRatio: PulsingBorderAspectRatios['auto'],
+      u_marginLeft: 0,
+      u_marginRight: 0,
+      u_marginTop: 0,
+      u_marginBottom: 0,
+      u_noiseTexture: getShaderNoiseTexture(),
+      u_fit: ShaderFitOptions['contain'],
+      u_scale: 0.6,
+      u_rotation: 0,
+      u_offsetX: 0,
+      u_offsetY: 0,
+      u_originX: 0.5,
+      u_originY: 0.5,
+      u_worldWidth: 0,
+      u_worldHeight: 0,
+    }, undefined, 1);
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField body="colorBack" type="string" default='"#000000"'>
+  Background color. Accepts any CSS color string, including transparent (`#00000000`).
+</ParamField>
+
+<ParamField body="colors" type="string[]" default='["#0dc1fd", "#d915ef", "#ff3f2ecc"]'>
+  Array of CSS color strings, one per color spot group. Accepts up to 5 colors.
+</ParamField>
+
+<ParamField body="roundness" type="number" default="0.25">
+  Corner radius of the border rectangle. `0` gives sharp corners; `1` gives a fully rounded shape. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="thickness" type="number" default="0.1">
+  Base width of the border. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="softness" type="number" default="0.75">
+  Edge sharpness of the border. `0` gives a hard edge; `1` gives a soft, wide glow. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="intensity" type="number" default="0.2">
+  Thickness of individual color spots relative to the border. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="bloom" type="number" default="0.25">
+  Blend mode for color spots. `0` uses normal (over) blending; `1` uses additive blending for a stronger glow. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="spots" type="number" default="5">
+  Number of spots added for each color. Range `1` to `20`.
+</ParamField>
+
+<ParamField body="spotSize" type="number" default="0.5">
+  Angular size of each color spot along the perimeter. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="pulse" type="number" default="0.25">
+  Intensity of a heartbeat-like pulsing animation. `0` disables the pulse. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="smoke" type="number" default="0.3">
+  Intensity of a noisy shape that extends the border inward and outward. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="smokeSize" type="number" default="0.6">
+  Scale of the smoke noise pattern. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="aspectRatio" type='"auto" | "square"' default='"auto"'>
+  Controls the aspect ratio of the border shape.
+  
+  - `auto` — the border shape matches the canvas aspect ratio
+  - `square` — the border shape is always square (useful for circular borders when combined with `roundness: 1`)
+</ParamField>
+
+<ParamField body="margin" type="number" default="0">
+  Shorthand to set equal margins on all four sides. When set, overrides individual `marginLeft`, `marginRight`, `marginTop`, and `marginBottom` values.
+</ParamField>
+
+<ParamField body="marginLeft" type="number" default="0">
+  Distance from the left canvas edge to the border shape. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="marginRight" type="number" default="0">
+  Distance from the right canvas edge to the border shape. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="marginTop" type="number" default="0">
+  Distance from the top canvas edge to the border shape. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="marginBottom" type="number" default="0">
+  Distance from the bottom canvas edge to the border shape. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="speed" type="number" default="1">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField body="frame" type="number" default="0">
+  Starting animation frame in milliseconds.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `defaultPreset` | Three-color cyan/magenta/red border with moderate roundness and pulse. |
+| `circlePreset` | Fully round border in `square` aspect ratio, creating a glowing circle. |
+| `northernLightsPreset` | Five-color aurora palette with very slow speed and full-screen thickness. |
+| `solidLinePreset` | Single-color solid hairline border with no pulse or smoke. |
+
+Import presets from `@paper-design/shaders-react`:
+
+```ts
+import { pulsingBorderPresets } from '@paper-design/shaders-react';
+```
+
+## Sizing props
+
+Pulsing Border also accepts all `ShaderSizingParams` (`fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, `worldHeight`). See [Sizing and fit](/concepts/sizing-and-fit) for details.

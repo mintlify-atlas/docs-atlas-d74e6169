@@ -1,0 +1,124 @@
+---
+title: "Dot Grid"
+description: "Static grid pattern made of circles, diamonds, squares or triangles."
+---
+
+A static, anti-aliased grid pattern rendered in one of four shape types: circle, diamond, square, or triangle. Each shape supports a fill color, stroke color, and background color, along with optional random variation in size and opacity per cell.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { DotGrid } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <DotGrid
+          colorBack="#000000"
+          colorFill="#ffffff"
+          colorStroke="#ffaa00"
+          size={2}
+          gapX={32}
+          gapY={32}
+          strokeWidth={0}
+          sizeRange={0}
+          opacityRange={0}
+          shape="circle"
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      dotGridFragmentShader,
+      DotGridShapes,
+    } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, dotGridFragmentShader, {
+      u_colorBack: [0, 0, 0, 1],
+      u_colorFill: [1, 1, 1, 1],
+      u_colorStroke: [1, 0.667, 0, 1],
+      u_dotSize: 2,
+      u_gapX: 32,
+      u_gapY: 32,
+      u_strokeWidth: 0,
+      u_sizeRange: 0,
+      u_opacityRange: 0,
+      u_shape: DotGridShapes.circle, // 0
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorBack" type="string" default="#000000">
+  Background color of the grid.
+</ParamField>
+
+<ParamField path="colorFill" type="string" default="#ffffff">
+  Fill color of each shape.
+</ParamField>
+
+<ParamField path="colorStroke" type="string" default="#ffaa00">
+  Stroke/outline color of each shape.
+</ParamField>
+
+<ParamField path="size" type="number" default="2">
+  Base size (radius) of each shape in pixels. Range: `1` to `100`.
+</ParamField>
+
+<ParamField path="gapX" type="number" default="32">
+  Horizontal spacing between shape centers in pixels. Range: `2` to `500`.
+</ParamField>
+
+<ParamField path="gapY" type="number" default="32">
+  Vertical spacing between shape centers in pixels. Range: `2` to `500`.
+</ParamField>
+
+<ParamField path="strokeWidth" type="number" default="0">
+  Outline stroke width in pixels. Range: `0` to `50`.
+</ParamField>
+
+<ParamField path="sizeRange" type="number" default="0">
+  Random variation in shape size per cell. `0` = uniform. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="opacityRange" type="number" default="0">
+  Random variation in shape opacity per cell. `0` = fully opaque. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="shape" type="string" default='"circle"'>
+  Shape type for each grid cell. One of `"circle"`, `"diamond"`, `"square"`, or `"triangle"`.
+</ParamField>
+
+## Shape options
+
+The `DotGridShapes` enum provides the available shape values:
+
+| Key | Value | Description |
+|-----|-------|-------------|
+| `circle` | `0` | Circular dots |
+| `diamond` | `1` | Diamond (rotated square) |
+| `square` | `2` | Axis-aligned square |
+| `triangle` | `3` | Equilateral triangle |
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | White circles with orange stroke on black |
+| `Triangles` | Outlined grey triangles on white |
+| `Tree line` | Variable-sized circles suggesting a treeline |
+| `Wallpaper` | Gold-outlined diamonds on dark green |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

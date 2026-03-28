@@ -1,0 +1,180 @@
+---
+title: "ShaderMount class"
+description: "Vanilla JS class for mounting and controlling WebGL shaders"
+---
+
+`ShaderMount` is the core class of `@paper-design/shaders`. It takes a parent `<div>`, a GLSL fragment shader, and a set of uniform values, then creates and manages a `<canvas>` inside the div that renders the shader.
+
+The canvas is automatically sized to match the parent element and re-renders on resize. When `speed` is non-zero, the shader animates via `requestAnimationFrame`. When `speed` is `0`, no rAF loop runs — static shaders have zero recurring performance cost.
+
+## Constructor
+
+```ts
+new ShaderMount(
+  parentElement: HTMLElement,
+  fragmentShader: string,
+  uniforms: ShaderMountUniforms,
+  webGlContextAttributes?: WebGLContextAttributes,
+  speed?: number,
+  frame?: number,
+  minPixelRatio?: number,
+  maxPixelCount?: number,
+  mipmaps?: string[]
+)
+```
+
+<ParamField path="parentElement" type="HTMLElement" required>
+  The `<div>` to mount the shader into. The shader canvas matches its size and updates automatically via `ResizeObserver`. Must be a real DOM element (node type 1).
+</ParamField>
+
+<ParamField path="fragmentShader" type="string" required>
+  The GLSL fragment shader source code (WebGL 2 / GLSL ES 3.00). The library provides a vertex shader internally — you only supply the fragment shader.
+</ParamField>
+
+<ParamField path="uniforms" type="ShaderMountUniforms" required>
+  An object of uniform values to pass to the shader. Supports `boolean`, `number`, `number[]`, `number[][]`, and `HTMLImageElement`. See [`ShaderMountUniforms`](/api/shader-types#shadermoununiforms).
+</ParamField>
+
+<ParamField path="webGlContextAttributes" type="WebGLContextAttributes">
+  Optional attributes passed to `canvas.getContext('webgl2', ...)`. Use this to control things like `premultipliedAlpha` or `preserveDrawingBuffer`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="0">
+  Animation speed multiplier. `0` means static (no rAF loop). Positive values animate forward; negative values animate in reverse. The value is a multiplier on delta time in milliseconds.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Starting frame offset in milliseconds. Use this to produce deterministic results or to seek to a specific point in the animation.
+</ParamField>
+
+<ParamField path="minPixelRatio" type="number" default="2">
+  The minimum device pixel ratio to render at. Defaults to `2` to ensure 2× rendering even on 1× screens for better anti-aliasing. Reduce to improve performance; increase together with `maxPixelCount` for sharper output on high-DPI screens.
+</ParamField>
+
+<ParamField path="maxPixelCount" type="number" default="8294400">
+  The maximum number of physical pixels to render (`1920 × 1080 × 4` by default, i.e. a 4K screen at 2× DPI). The canvas may be larger in the DOM but rendering quality is capped at this limit. Reduce to improve performance on large screens.
+</ParamField>
+
+<ParamField path="mipmaps" type="string[]">
+  Names of texture uniforms that should have mipmaps generated. When listed, `generateMipmap()` is called and `LINEAR_MIPMAP_LINEAR` filtering is applied, which improves quality when the texture is displayed at a smaller size than its native resolution.
+</ParamField>
+
+## Public methods
+
+<ResponseField name="setUniforms(newUniforms)" type="(newUniforms: ShaderMountUniforms) => void">
+  Updates one or more uniform values. You can pass a partial object containing only the uniforms that changed — values that haven't changed are skipped via an internal cache to avoid redundant GPU calls. Triggers an immediate re-render.
+</ResponseField>
+
+<ResponseField name="setSpeed(newSpeed)" type="(newSpeed: number) => void">
+  Changes the animation speed. Setting to `0` cancels the rAF loop; setting to a non-zero value restarts it. Automatically paused when the browser tab is hidden and resumed when it becomes visible again.
+</ResponseField>
+
+<ResponseField name="setFrame(newFrame)" type="(newFrame: number) => void">
+  Seeks the animation to a specific frame (in milliseconds from the start). Useful for scrubbing or producing deterministic snapshots. Triggers an immediate re-render.
+</ResponseField>
+
+<ResponseField name="setMaxPixelCount(newMaxPixelCount)" type="(newMaxPixelCount?: number) => void">
+  Updates the maximum physical pixel cap and triggers a resize recalculation. Defaults to `1920 × 1080 × 4` if called without an argument.
+</ResponseField>
+
+<ResponseField name="setMinPixelRatio(newMinPixelRatio)" type="(newMinPixelRatio?: number) => void">
+  Updates the minimum pixel ratio and triggers a resize recalculation. Defaults to `2` if called without an argument.
+</ResponseField>
+
+<ResponseField name="getCurrentFrame()" type="() => number">
+  Returns the current animation time in milliseconds from frame zero. Useful for reading the playhead position before disposing or transferring state.
+</ResponseField>
+
+<ResponseField name="dispose()" type="() => void">
+  Cleans up all WebGL resources (textures, program, buffers), cancels the rAF loop, disconnects the `ResizeObserver`, removes event listeners, and detaches the canvas from the DOM. Always call `dispose()` when you no longer need the shader to prevent memory leaks.
+</ResponseField>
+
+## Properties
+
+| Property | Type | Description |
+|---|---|---|
+| `parentElement` | `PaperShaderElement` | The div the shader was mounted into. Has a `paperShaderMount` property pointing back to the `ShaderMount` instance. |
+| `canvasElement` | `HTMLCanvasElement` | The `<canvas>` element created and managed by `ShaderMount`. It is prepended as the first child of `parentElement`. |
+
+## Usage example
+
+```ts
+import { ShaderMount } from '@paper-design/shaders';
+import { getShaderColorFromString } from '@paper-design/shaders';
+
+const container = document.getElementById('shader-container')!;
+
+// A minimal animated fragment shader
+const fragmentShader = `#version 300 es
+precision mediump float;
+
+uniform float u_time;
+uniform vec4 u_color;
+
+out vec4 fragColor;
+
+void main() {
+  float brightness = 0.5 + 0.5 * sin(u_time + gl_FragCoord.x * 0.01);
+  fragColor = vec4(u_color.rgb * brightness, u_color.a);
+}
+`;
+
+const shader = new ShaderMount(
+  container,
+  fragmentShader,
+  {
+    u_color: getShaderColorFromString('#6366f1'),
+  },
+  undefined, // webGlContextAttributes
+  1,         // speed
+  0          // frame
+);
+
+// Later: update a uniform
+shader.setUniforms({ u_color: getShaderColorFromString('#f43f5e') });
+
+// Pause animation
+shader.setSpeed(0);
+
+// Seek to a specific frame
+shader.setFrame(2000);
+
+// Read current position
+console.log(shader.getCurrentFrame()); // e.g. 2000
+
+// Clean up
+shader.dispose();
+```
+
+## PaperShaderElement
+
+After mounting, `ShaderMount` attaches itself to `parentElement.paperShaderMount` and marks the element with the `data-paper-shader` attribute. The element is typed as `PaperShaderElement`:
+
+```ts
+export interface PaperShaderElement extends HTMLElement {
+  paperShaderMount: ShaderMount | undefined;
+}
+```
+
+This lets you retrieve the active `ShaderMount` instance from a reference to the DOM element.
+
+## isPaperShaderElement
+
+```ts
+function isPaperShaderElement(element: HTMLElement): element is PaperShaderElement
+```
+
+A type guard that returns `true` if the element has a `paperShaderMount` property (i.e. `ShaderMount` has been mounted on it). Safe to use across document boundaries such as iframes or Picture-in-Picture windows.
+
+```ts
+import { isPaperShaderElement } from '@paper-design/shaders';
+
+const el = document.getElementById('my-shader');
+if (el && isPaperShaderElement(el)) {
+  el.paperShaderMount?.setSpeed(0.5);
+}
+```
+
+<Note>
+`ShaderMount` injects a small stylesheet (`@layer paper-shaders`) into the document `<head>` on first use. This positions the canvas absolutely within the parent and sets `isolation: isolate` so the shader doesn't bleed into surrounding stacking contexts.
+</Note>

@@ -1,0 +1,104 @@
+---
+title: "Mesh Gradient"
+description: "A flowing interplay of color spots, moving along distinct trajectories and transformed by organic distortion."
+---
+
+Mesh Gradient renders up to 10 color spots that glide along independent trajectories. Organic noise distortion and a vortex swirl warp their positions, while two grain controls let you add texture to color edges or apply a classic film-grain overlay.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { MeshGradient } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <MeshGradient
+          colors={['#e0eaff', '#241d9a', '#f75092', '#9f50d3']}
+          distortion={0.8}
+          swirl={0.1}
+          grainMixer={0}
+          grainOverlay={0}
+          speed={1}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, meshGradientFragmentShader, getShaderColorFromString, ShaderFitOptions } from '@paper-design/shaders';
+
+    const container = document.getElementById('shader-container');
+
+    const mount = new ShaderMount(container, meshGradientFragmentShader, {
+      u_colors: ['#e0eaff', '#241d9a', '#f75092', '#9f50d3'].map(getShaderColorFromString),
+      u_colorsCount: 4,
+      u_distortion: 0.8,
+      u_swirl: 0.1,
+      u_grainMixer: 0,
+      u_grainOverlay: 0,
+      u_fit: ShaderFitOptions['contain'],
+      u_scale: 1,
+      u_rotation: 0,
+      u_offsetX: 0,
+      u_offsetY: 0,
+      u_originX: 0.5,
+      u_originY: 0.5,
+      u_worldWidth: 0,
+      u_worldHeight: 0,
+    }, undefined, 1);
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField body="colors" type="string[]" default='["#e0eaff", "#241d9a", "#f75092", "#9f50d3"]'>
+  Array of CSS color strings for each color spot. Accepts up to 10 colors. Supports any valid CSS color format including hex with alpha (e.g. `#ff000080`).
+</ParamField>
+
+<ParamField body="distortion" type="number" default="0.8">
+  Power of organic noise distortion applied to color spot positions. Range `0` to `1`, where `0` means no distortion and `1` is maximum.
+</ParamField>
+
+<ParamField body="swirl" type="number" default="0.1">
+  Power of vortex (swirl) distortion. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="grainMixer" type="number" default="0">
+  Strength of grain distortion applied to color spot edges. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="grainOverlay" type="number" default="0">
+  Post-processing black/white film grain overlay blended on top of the final color. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="speed" type="number" default="1">
+  Animation speed multiplier. Set to `0` to pause. Negative values play the animation in reverse.
+</ParamField>
+
+<ParamField body="frame" type="number" default="0">
+  Starting animation frame in milliseconds. Useful for getting a deterministic first frame.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `defaultPreset` | Four-color palette (blue, indigo, pink, purple) with moderate distortion. |
+| `inkPreset` | High-contrast black-and-white with heavy distortion and 90° rotation. |
+| `purplePreset` | Two-color deep purple scheme with maximum swirl. |
+| `beachPreset` | Slow-moving aqua and gold palette. |
+
+Import presets from `@paper-design/shaders-react`:
+
+```ts
+import { meshGradientPresets } from '@paper-design/shaders-react';
+```
+
+## Sizing props
+
+Mesh Gradient also accepts all `ShaderSizingParams` (`fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, `worldHeight`). See [Sizing and fit](/concepts/sizing-and-fit) for details.

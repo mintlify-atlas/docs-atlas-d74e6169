@@ -1,97 +1,85 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Shaders"
+description: "Zero-dependency WebGL canvas shaders for React and vanilla JS. Add stunning animated gradients, noise patterns, and image filters to any web project."
 ---
 
-## Setting up
+Paper Shaders is a collection of 28 high-performance WebGL2 shaders you can drop into any web app. Install from npm, configure with typed props, and ship beautiful animated backgrounds, textures, and image effects with zero runtime dependencies.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="React quickstart" icon="react" href="/quickstart-react">
+    Add your first shader to a React app in under two minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Vanilla JS quickstart" icon="js" href="/quickstart-vanilla">
+    Use shaders in any framework — or no framework at all.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Browse shaders" icon="layer-group" href="/shaders/overview">
+    Explore all 28 shaders: gradients, noise, patterns, and image filters.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="API reference" icon="code" href="/api/shader-mount-class">
+    Full TypeScript API for ShaderMount, sizing, and all shader parameters.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Why Paper Shaders?
 
-Everything you need to create world-class documentation.
+<CardGroup cols={2}>
+  <Card title="Zero dependencies" icon="feather">
+    Pure WebGL2 — no Three.js, no PIXI, no runtime overhead. Each shader is a self-contained fragment shader string.
+  </Card>
+  <Card title="Animated by default" icon="play">
+    Control speed, direction, and frame offset. Set `speed={0}` for a static, zero-cost render.
+  </Card>
+  <Card title="Fully typed" icon="typescript" href="/api/shader-types">
+    Every shader exposes TypeScript param and uniform types extracted directly from source.
+  </Card>
+  <Card title="SSR safe" icon="server">
+    Undefined uniforms are gracefully skipped, so shaders render without errors during server-side rendering.
+  </Card>
+  <Card title="Image filters" icon="image" href="/shaders/fluted-glass">
+    Apply fluted glass, water distortion, dithering, heatmap, liquid metal, and halftone effects to any image.
+  </Card>
+  <Card title="Designed in Paper" icon="pen-nib">
+    Configure shaders visually in the Paper design tool and export directly to production-ready code.
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+## Get started
 
-## Need inspiration?
+<Steps>
+  <Step title="Install the package">
+    Choose the package for your stack.
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+    <CodeGroup>
+    ```bash React
+    npm install @paper-design/shaders-react
+    ```
+    ```bash Vanilla JS
+    npm install @paper-design/shaders
+    ```
+    </CodeGroup>
+
+    <Note>Pin your dependency version. Paper Shaders ships breaking changes under `0.0.x` versioning while the API stabilises.</Note>
+  </Step>
+  <Step title="Add a shader to your page">
+    Import a component and drop it in — it fills its parent container.
+
+    ```tsx
+    import { MeshGradient } from '@paper-design/shaders-react';
+
+    export default function Hero() {
+      return (
+        <div style={{ width: '100%', height: 400 }}>
+          <MeshGradient
+            colors={['#e0eaff', '#241d9a', '#f75092', '#9f50d3']}
+            speed={1}
+            style={{ width: '100%', height: '100%' }}
+          />
+        </div>
+      );
+    }
+    ```
+  </Step>
+  <Step title="Customise with props">
+    Every shader exposes typed props for colors, speed, distortion, sizing, and more. See the [shader reference](/shaders/overview) for all options.
+  </Step>
+</Steps>

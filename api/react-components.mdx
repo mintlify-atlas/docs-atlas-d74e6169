@@ -1,0 +1,234 @@
+---
+title: "React components"
+description: "All React shader components exported from @paper-design/shaders-react"
+---
+
+`@paper-design/shaders-react` exports a ready-to-use React component for every shader in the library. All components are client-only (marked `'use client'`) and accept standard `<div>` props alongside their shader-specific params.
+
+## Component pattern
+
+Every component follows the same structure:
+
+```ts
+// Component props = ShaderComponentProps + shader-specific Params
+interface MeshGradientProps extends ShaderComponentProps, MeshGradientParams {}
+
+// The component itself
+const MeshGradient: React.FC<MeshGradientProps>;
+
+// A set of named presets
+const meshGradientPresets: ShaderPreset<MeshGradientParams>[];
+```
+
+`ShaderComponentProps` provides `width`, `height`, `minPixelRatio`, `maxPixelCount`, `webGlContextAttributes`, `ref`, and all standard `<div>` props. See [React ShaderMount](/api/react-shader-mount#shadercomponentprops) for the full definition.
+
+## All components
+
+<CardGroup cols={2}>
+  <Card title="MeshGradient" href="/shaders/mesh-gradient">
+    Flowing color spots moving along distinct trajectories with organic distortion
+  </Card>
+  <Card title="SmokeRing" href="/shaders/smoke-ring">
+    Radial multi-colored gradient shaped with layered noise for a smoky aesthetic
+  </Card>
+  <Card title="NeuroNoise" href="/shaders/neuro-noise">
+    Glowing web-like structure of fluid lines and soft intersections
+  </Card>
+  <Card title="DotOrbit" href="/shaders/dot-orbit">
+    Animated multi-color dots with each dot orbiting around its cell center
+  </Card>
+  <Card title="DotGrid" href="/shaders/dot-grid">
+    Static grid pattern of circles, diamonds, squares, or triangles
+  </Card>
+  <Card title="SimplexNoise" href="/shaders/simplex-noise">
+    Multi-color gradient mapped into smooth, animated curves
+  </Card>
+  <Card title="Metaballs" href="/shaders/metaballs">
+    Gooey blobs moving around the center and merging into organic shapes
+  </Card>
+  <Card title="Waves" href="/shaders/waves">
+    Static line pattern configurable from sharp zigzags to smooth flowing waves
+  </Card>
+  <Card title="PerlinNoise" href="/shaders/perlin-noise">
+    Animated 3D Perlin noise with exposed controls
+  </Card>
+  <Card title="Voronoi" href="/shaders/voronoi">
+    Anti-aliased animated Voronoi pattern with smooth, customizable edges
+  </Card>
+  <Card title="Warp" href="/shaders/warp">
+    Animated color fields warped by noise and swirls over base patterns
+  </Card>
+  <Card title="GodRays" href="/shaders/god-rays">
+    Animated rays of light radiating from the center, blended with up to 5 colors
+  </Card>
+  <Card title="Spiral" href="/shaders/spiral">
+    Single-color animated spiral morphing across a wide range of shapes
+  </Card>
+  <Card title="Swirl" href="/shaders/swirl">
+    Animated bands of color twisting and bending into spirals and arcs
+  </Card>
+  <Card title="Dithering" href="/shaders/dithering">
+    Animated 2-color dithering over multiple pattern sources
+  </Card>
+  <Card title="GrainGradient" href="/shaders/grain-gradient">
+    Multi-color gradients with grainy, noise-textured distortion
+  </Card>
+  <Card title="PulsingBorder" href="/shaders/pulsing-border">
+    Luminous trails of color merging into a glowing gradient frame
+  </Card>
+  <Card title="ColorPanels" href="/shaders/color-panels">
+    Glowing translucent 3D panels rotating around a central axis
+  </Card>
+  <Card title="StaticMeshGradient" href="/shaders/static-mesh-gradient">
+    Multi-point mesh gradients with up to 10 color spots and warp controls
+  </Card>
+  <Card title="StaticRadialGradient" href="/shaders/static-radial-gradient">
+    Radial gradient with up to 10 blended colors and advanced focal point control
+  </Card>
+  <Card title="PaperTexture" href="/shaders/paper-texture">
+    Static texture from multiple noise layers for paper and cardboard surfaces
+  </Card>
+  <Card title="FlutedGlass" href="/shaders/fluted-glass">
+    Image filter that transforms an image into streaked, ribbed glass distortions
+  </Card>
+  <Card title="Water" href="/shaders/water">
+    Water-like surface distortion with natural caustic realism
+  </Card>
+  <Card title="ImageDithering" href="/shaders/image-dithering">
+    Dithering image filter with 4 modes and multiple color palettes
+  </Card>
+  <Card title="Heatmap" href="/shaders/heatmap">
+    Glowing gradient of colors flowing through an input image
+  </Card>
+  <Card title="LiquidMetal" href="/shaders/liquid-metal">
+    Futuristic liquid metal material applied to an uploaded logo or abstract shape
+  </Card>
+  <Card title="HalftoneDots" href="/shaders/halftone-dots">
+    Halftone-dot image filter with customizable grids, palettes, and dot styles
+  </Card>
+  <Card title="HalftoneCmyk" href="/shaders/halftone-cmyk">
+    Classic CMYK halftone image filter
+  </Card>
+</CardGroup>
+
+---
+
+## Presets
+
+Every component ships with a set of named presets — curated parameter combinations that demonstrate the shader's range. Presets are typed as `ShaderPreset<Params>` (or `ImageShaderPreset<Params>` for image-filter shaders that exclude the `image` param).
+
+### Exported preset arrays
+
+| Export | Type |
+|---|---|
+| `meshGradientPresets` | `ShaderPreset<MeshGradientParams>[]` |
+| `smokeRingPresets` | `ShaderPreset<SmokeRingParams>[]` |
+| `neuroNoisePresets` | `ShaderPreset<NeuroNoiseParams>[]` |
+| `dotOrbitPresets` | `ShaderPreset<DotOrbitParams>[]` |
+| `dotGridPresets` | `ShaderPreset<DotGridParams>[]` |
+| `simplexNoisePresets` | `ShaderPreset<SimplexNoiseParams>[]` |
+| `metaballsPresets` | `ShaderPreset<MetaballsParams>[]` |
+| `wavesPresets` | `ShaderPreset<WavesParams>[]` |
+| `perlinNoisePresets` | `ShaderPreset<PerlinNoiseParams>[]` |
+| `voronoiPresets` | `ShaderPreset<VoronoiParams>[]` |
+| `warpPresets` | `ShaderPreset<WarpParams>[]` |
+| `godRaysPresets` | `ShaderPreset<GodRaysParams>[]` |
+| `spiralPresets` | `ShaderPreset<SpiralParams>[]` |
+| `swirlPresets` | `ShaderPreset<SwirlParams>[]` |
+| `ditheringPresets` | `ShaderPreset<DitheringParams>[]` |
+| `grainGradientPresets` | `ShaderPreset<GrainGradientParams>[]` |
+| `pulsingBorderPresets` | `ShaderPreset<PulsingBorderParams>[]` |
+| `colorPanelsPresets` | `ShaderPreset<ColorPanelsParams>[]` |
+| `staticMeshGradientPresets` | `ShaderPreset<StaticMeshGradientParams>[]` |
+| `staticRadialGradientPresets` | `ShaderPreset<StaticRadialGradientParams>[]` |
+| `paperTexturePresets` | `ShaderPreset<PaperTextureParams>[]` |
+| `flutedGlassPresets` | `ShaderPreset<FlutedGlassParams>[]` |
+| `waterPresets` | `ShaderPreset<WaterParams>[]` |
+| `imageDitheringPresets` | `ShaderPreset<ImageDitheringParams>[]` |
+| `heatmapPresets` | `ShaderPreset<HeatmapParams>[]` |
+| `liquidMetalPresets` | `ShaderPreset<LiquidMetalParams>[]` |
+| `halftoneDotsPresets` | `ShaderPreset<HalftoneDotsParams>[]` |
+| `halftoneCmykPresets` | `ShaderPreset<HalftoneCmykParams>[]` |
+
+### Using a preset
+
+```tsx
+import { MeshGradient, meshGradientPresets } from '@paper-design/shaders-react';
+
+const preset = meshGradientPresets[0];
+// preset.name  → "Default"
+// preset.params → { colors: [...], distortion: 0.8, speed: 1, fit: 'contain', ... }
+
+<MeshGradient
+  {...preset.params}
+  style={{ width: '100%', height: '400px' }}
+/>
+```
+
+---
+
+## Meta objects
+
+Some shaders export a `<name>Meta` object with static metadata about the shader — for example, the maximum number of colors it supports.
+
+### Exported meta objects
+
+```ts
+import {
+  meshGradientMeta,       // { maxColorCount: 10 }
+  dotOrbitMeta,
+  godRaysMeta,
+  grainGradientMeta,
+  metaballsMeta,
+  pulsingBorderMeta,
+  simplexNoiseMeta,
+  smokeRingMeta,
+  swirlMeta,
+  voronoiMeta,
+  warpMeta,
+  heatmapMeta,
+  colorPanelsMeta,
+  staticMeshGradientMeta,
+  staticRadialGradientMeta,
+} from '@paper-design/shaders-react';
+```
+
+These are re-exported from `@paper-design/shaders`. Use them to drive UI controls dynamically — for example, to set the maximum number of color stops in a color picker.
+
+```ts
+import { meshGradientMeta } from '@paper-design/shaders-react';
+
+console.log(meshGradientMeta.maxColorCount); // 10
+```
+
+---
+
+## Full usage example
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+import { MeshGradient, meshGradientPresets } from '@paper-design/shaders-react';
+
+export function GradientDemo() {
+  const [presetIndex, setPresetIndex] = useState(0);
+  const preset = meshGradientPresets[presetIndex];
+
+  return (
+    <div>
+      <MeshGradient
+        {...preset.params}
+        style={{ width: '100%', height: '500px', borderRadius: '16px' }}
+      />
+      <div>
+        {meshGradientPresets.map((p, i) => (
+          <button key={p.name} onClick={() => setPresetIndex(i)}>
+            {p.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+```

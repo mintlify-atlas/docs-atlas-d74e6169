@@ -1,0 +1,150 @@
+---
+title: "Animation"
+description: "Control speed, direction, and timing of shader animations"
+---
+
+Paper Shaders animates by advancing an internal timer (`currentFrame`) each `requestAnimationFrame` tick and passing it to the shader as the `u_time` uniform (in seconds). Two props — `speed` and `frame` — give you full control over how time progresses.
+
+## `speed`
+
+`speed` is a multiplier applied to the delta time on every frame. The default is `0` (paused at construction time); named shader components typically default to `1`.
+
+| Value | Effect |
+|---|---|
+| `1` | Normal forward playback |
+| `0.5` | Half speed |
+| `2` | Double speed |
+| `-1` | Reverse playback |
+| `0` | Stopped |
+
+<Note>
+  When `speed` is `0`, the `requestAnimationFrame` loop is cancelled entirely. A fully stopped shader has **zero recurring CPU or GPU cost** — it is as cheap as a static image.
+</Note>
+
+## `frame`
+
+`frame` is an offset applied to the starting `u_time` value, in milliseconds. It does not affect playback speed; it shifts where in the animation the shader starts.
+
+Use `frame` whenever you need a deterministic result:
+- Server-side rendering (SSR) — set a fixed frame so the initial HTML matches the first client render.
+- Visual regression tests — snapshot a specific point in the animation.
+- Resuming a saved state — store `getCurrentFrame()` and restore it later.
+
+## Tab visibility
+
+`ShaderMount` listens to the `document` `visibilitychange` event. When the tab is hidden, it resets the effective speed to `0` and cancels the animation loop. When the tab becomes visible again, it restores the original speed and resumes the loop. The `currentFrame` value does not advance while the tab is hidden, so animations resume from where they left off rather than jumping forward.
+
+## Methods
+
+### `setSpeed(newSpeed)`
+
+Change speed at any time without recreating the shader.
+
+```ts
+mount.setSpeed(0);   // pause
+mount.setSpeed(-1);  // reverse
+mount.setSpeed(1);   // resume
+```
+
+Equivalent to updating the `speed` prop in React.
+
+### `setFrame(newFrame)`
+
+Jump to an exact point in the animation (milliseconds from time zero) and trigger an immediate re-render.
+
+```ts
+mount.setFrame(5000); // jump to the 5-second mark
+```
+
+### `getCurrentFrame()`
+
+Returns the total number of animation milliseconds played so far, not counting time when the tab was hidden or speed was `0`.
+
+```ts
+const snapshot = mount.getCurrentFrame();
+// … later …
+mount.setFrame(snapshot); // restore
+```
+
+## Examples
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { useState } from 'react';
+    import { MeshGradient } from '@paper-design/shaders-react';
+
+    export function AnimatedShader() {
+      const [speed, setSpeed] = useState(1);
+
+      return (
+        <>
+          <MeshGradient
+            style={{ width: '100%', height: 400 }}
+            speed={speed}
+          />
+          <button onClick={() => setSpeed(s => s === 0 ? 1 : 0)}>
+            {speed === 0 ? 'Resume' : 'Pause'}
+          </button>
+          <button onClick={() => setSpeed(-1)}>Reverse</button>
+        </>
+      );
+    }
+    ```
+
+    ```tsx
+    // Deterministic starting frame for SSR / snapshots
+    <MeshGradient
+      style={{ width: 800, height: 400 }}
+      speed={1}
+      frame={3000}  // start at the 3-second mark
+    />
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, meshGradientFragmentShader, ShaderFitOptions } from '@paper-design/shaders';
+
+    const mount = new ShaderMount(
+      document.getElementById('container'),
+      meshGradientFragmentShader,
+      {
+        u_colors: [[0.88, 0.92, 1, 1], [0.14, 0.11, 0.6, 1]],
+        u_colorsCount: 2,
+        u_distortion: 0.8,
+        u_swirl: 0.1,
+        u_grainMixer: 0,
+        u_grainOverlay: 0,
+        u_fit: ShaderFitOptions['contain'],
+        u_scale: 1,
+        u_rotation: 0,
+        u_offsetX: 0,
+        u_offsetY: 0,
+        u_originX: 0.5,
+        u_originY: 0.5,
+        u_worldWidth: 0,
+        u_worldHeight: 0,
+      },
+      undefined,
+      1, // speed — start animating immediately
+      0, // frame
+    );
+
+    // Pause
+    mount.setSpeed(0);
+
+    // Read the current position before disposing
+    const savedFrame = mount.getCurrentFrame();
+
+    // Resume from a saved frame after recreating
+    const mount2 = new ShaderMount(
+      document.getElementById('container'),
+      meshGradientFragmentShader,
+      { /* same uniforms */ },
+      undefined,
+      1,
+      savedFrame, // restore position
+    );
+    ```
+  </Tab>
+</Tabs>

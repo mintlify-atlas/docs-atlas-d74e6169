@@ -1,0 +1,145 @@
+---
+title: "Paper Texture"
+description: "A static texture built from multiple noise layers, usable for a realistic paper and cardboard surfaces or generating abstract patterns. Can be used as an image filter or as a texture."
+---
+
+A static texture built from multiple noise layers — fiber noise, cell-based crumples, fold distortion, roughness, and speckle drops — composited with a directional light model to produce a convincing paper or cardboard surface. Can be used as a standalone texture or as an image filter over an uploaded photo.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { PaperTexture } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <PaperTexture
+          colorFront="#9fadbc"
+          colorBack="#ffffff"
+          contrast={0.3}
+          roughness={0.4}
+          fiber={0.3}
+          fiberSize={0.2}
+          crumples={0.3}
+          crumpleSize={0.35}
+          folds={0.65}
+          foldCount={5}
+          fade={0}
+          drops={0.2}
+          seed={5.8}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      paperTextureFragmentShader,
+      getShaderNoiseTexture,
+    } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, paperTextureFragmentShader, {
+      u_colorFront: [0.624, 0.678, 0.737, 1],
+      u_colorBack: [1, 1, 1, 1],
+      u_image: undefined,
+      u_contrast: 0.3,
+      u_roughness: 0.4,
+      u_fiber: 0.3,
+      u_fiberSize: 0.2,
+      u_crumples: 0.3,
+      u_crumpleSize: 0.35,
+      u_folds: 0.65,
+      u_foldCount: 5,
+      u_fade: 0,
+      u_drops: 0.2,
+      u_seed: 5.8,
+      u_noiseTexture: getShaderNoiseTexture(),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorFront" type="string" default="#9fadbc">
+  Foreground (highlight/lit surface) color.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="#ffffff">
+  Background (shadow/unlit surface) color.
+</ParamField>
+
+<ParamField path="image" type="string | HTMLImageElement">
+  Optional source image to apply the paper texture over as a filter.
+</ParamField>
+
+<ParamField path="contrast" type="number" default="0.3">
+  Blending behavior controlling the sharpness of the light/shadow transitions. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="roughness" type="number" default="0.4">
+  Pixel-level noise intensity. Related to canvas pixels and not scalable. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="fiber" type="number" default="0.3">
+  Intensity of the curly fiber noise layer. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="fiberSize" type="number" default="0.2">
+  Scale of the fiber noise. Smaller values produce finer fibers. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="crumples" type="number" default="0.3">
+  Intensity of the cell-based crumple pattern. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="crumpleSize" type="number" default="0.35">
+  Scale of the crumple pattern cells. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="folds" type="number" default="0.65">
+  Depth of the fold/crease deformation. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="foldCount" type="number" default="5">
+  Number of folds applied to the surface. Range: `1` to `15`.
+</ParamField>
+
+<ParamField path="fade" type="number" default="0">
+  Big-scale noise mask applied to the texture. Higher values fade the pattern toward the edges. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="drops" type="number" default="0.2">
+  Visibility of speckle/water-drop pattern. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="seed" type="number" default="5.8">
+  Seed applied to folds, crumples, and drops. Changing this value produces a different surface configuration. Range: `0` to `1000`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="0">
+  Animation speed. Paper texture is static by default (`speed: 0`).
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Static frame position when `speed` is `0`.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | Realistic blue-grey paper with balanced texture |
+| `Cardboard` | Brown cardboard with strong fiber and crumples |
+| `Abstract` | High-contrast abstract surface in cyan and magenta |
+| `Details` | Maximum detail mode with transparent colors for use as an overlay |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

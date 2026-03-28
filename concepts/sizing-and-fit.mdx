@@ -1,0 +1,185 @@
+---
+title: "Sizing and fit"
+description: "Control how shaders scale, rotate, and position inside their container"
+---
+
+Paper Shaders uses a sizing system to control how a shader's visual content maps to the canvas. This is separate from the size of the canvas itself (which always fills the parent element) — sizing controls the internal coordinate space of the rendered graphic.
+
+## Sizing modes
+
+Two defaults are exported from `@paper-design/shaders`. Each built-in shader uses whichever makes sense for its type.
+
+### `defaultObjectSizing`
+
+Used by object-like shaders — gradients, effects, and anything that has a natural center and should scale to fit its container.
+
+```ts
+import { defaultObjectSizing } from '@paper-design/shaders';
+// {
+//   fit: 'contain',
+//   scale: 1,
+//   rotation: 0,
+//   offsetX: 0,
+//   offsetY: 0,
+//   originX: 0.5,
+//   originY: 0.5,
+//   worldWidth: 0,
+//   worldHeight: 0,
+// }
+```
+
+### `defaultPatternSizing`
+
+Used by repeating pattern shaders — anything that tiles or fills the canvas without needing to maintain a specific aspect ratio.
+
+```ts
+import { defaultPatternSizing } from '@paper-design/shaders';
+// {
+//   fit: 'none',
+//   scale: 1,
+//   rotation: 0,
+//   offsetX: 0,
+//   offsetY: 0,
+//   originX: 0.5,
+//   originY: 0.5,
+//   worldWidth: 0,
+//   worldHeight: 0,
+// }
+```
+
+The only difference between the two defaults is the `fit` value.
+
+## `ShaderFit` options
+
+The `fit` prop controls how the shader's world coordinate space is mapped onto the canvas.
+
+| Value | Behaviour |
+|---|---|
+| `'none'` | No fitting applied. The shader fills the canvas at 1:1 scale. Pixels outside the world dimensions tile or clip depending on the shader. |
+| `'contain'` | Scale to fit entirely inside the canvas, maintaining the world aspect ratio. Equivalent to CSS `object-fit: contain`. |
+| `'cover'` | Scale to fill the canvas entirely, cropping as needed. Equivalent to CSS `object-fit: cover`. |
+
+## `ShaderSizingParams` reference
+
+All sizing params are optional. They are passed as props on React components or as uniforms when using the vanilla `ShaderMount`.
+
+<ParamField path="fit" type="'none' | 'contain' | 'cover'" default="'contain' for objects, 'none' for patterns">
+  How to fit the shader's world space into the canvas. See the table above.
+</ParamField>
+
+<ParamField path="scale" type="number" default="1">
+  Uniform zoom level applied on top of the fit transform. `2` zooms in by 2×, `0.5` zooms out.
+</ParamField>
+
+<ParamField path="rotation" type="number" default="0">
+  Rotation of the graphic in degrees. Applied around the origin point.
+</ParamField>
+
+<ParamField path="originX" type="number" default="0.5">
+  The horizontal anchor point for rotation and scaling, as a fraction of the canvas width. `0` is the left edge, `1` is the right edge, `0.5` is centre.
+</ParamField>
+
+<ParamField path="originY" type="number" default="0.5">
+  The vertical anchor point for rotation and scaling, as a fraction of the canvas height. `0` is the top edge, `1` is the bottom edge, `0.5` is centre.
+</ParamField>
+
+<ParamField path="offsetX" type="number" default="0">
+  Horizontal pan of the graphic, in normalised units (−1 to 1 spans the canvas width).
+</ParamField>
+
+<ParamField path="offsetY" type="number" default="0">
+  Vertical pan of the graphic, in normalised units (−1 to 1 spans the canvas height).
+</ParamField>
+
+<ParamField path="worldWidth" type="number" default="0">
+  The virtual width of the shader's coordinate space in pixels before fitting is applied. Used with tiling pattern shaders to keep a consistent tile size regardless of canvas dimensions. `0` means the world width matches the canvas width.
+</ParamField>
+
+<ParamField path="worldHeight" type="number" default="0">
+  The virtual height of the shader's coordinate space in pixels before fitting is applied. `0` means the world height matches the canvas height.
+</ParamField>
+
+## `worldWidth` and `worldHeight` for tiling patterns
+
+Pattern shaders (those using `defaultPatternSizing`) tile based on their world coordinate space. By fixing `worldWidth` and `worldHeight` you pin the physical size of each tile regardless of how large or small the canvas is.
+
+```tsx
+// Dots that are always 200 × 200 px per tile, no matter the container size
+<DotGrid
+  worldWidth={200}
+  worldHeight={200}
+/>
+```
+
+When `worldWidth` and `worldHeight` are `0` (the default), the pattern adapts to fill the canvas exactly once.
+
+## Code examples
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { MeshGradient } from '@paper-design/shaders-react';
+
+    // Contain with a 1.5× zoom and 45° rotation
+    <MeshGradient
+      style={{ width: 600, height: 400 }}
+      fit="contain"
+      scale={1.5}
+      rotation={45}
+      speed={1}
+    />
+
+    // Cover — fill the container and crop
+    <MeshGradient
+      style={{ width: 600, height: 400 }}
+      fit="cover"
+      speed={1}
+    />
+
+    // Offset the graphic to the right and down
+    <MeshGradient
+      style={{ width: 600, height: 400 }}
+      fit="contain"
+      offsetX={0.25}
+      offsetY={0.1}
+      speed={1}
+    />
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      meshGradientFragmentShader,
+      ShaderFitOptions,
+      defaultObjectSizing,
+    } from '@paper-design/shaders';
+
+    const mount = new ShaderMount(
+      document.getElementById('container'),
+      meshGradientFragmentShader,
+      {
+        // Sizing uniforms
+        u_fit: ShaderFitOptions['contain'],
+        u_scale: 1.5,
+        u_rotation: 45,
+        u_offsetX: 0,
+        u_offsetY: 0,
+        u_originX: defaultObjectSizing.originX,
+        u_originY: defaultObjectSizing.originY,
+        u_worldWidth: 0,
+        u_worldHeight: 0,
+        // Shader-specific uniforms …
+        u_colors: [[0.88, 0.92, 1, 1], [0.14, 0.11, 0.6, 1]],
+        u_colorsCount: 2,
+        u_distortion: 0.8,
+        u_swirl: 0.1,
+        u_grainMixer: 0,
+        u_grainOverlay: 0,
+      },
+      undefined,
+      1, // speed
+    );
+    ```
+  </Tab>
+</Tabs>

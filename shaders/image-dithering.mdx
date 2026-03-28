@@ -1,0 +1,136 @@
+---
+title: "Image Dithering"
+description: "A dithering image filter with support for 4 dithering modes and multiple color palettes (2-color, 3-color, and multicolor options, using either predefined colors or ones sampled directly from the original image)."
+---
+
+Image Dithering is an image filter shader that posterizes an input image using ordered or random dithering algorithms. It supports predefined 2- and 3-color palettes as well as sampling colors directly from the original image, and exposes controls for dithering type, pixel size, and color step count.
+
+<Note>
+  This is an image filter shader — it requires an image input. In React, pass a URL string to the `image` prop and it is loaded automatically. In vanilla JS, pass a fully loaded `HTMLImageElement` to `u_image`.
+</Note>
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { ImageDithering } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <ImageDithering
+          image="/my-photo.jpg"
+          type="8x8"
+          size={2}
+          colorFront="#94ffaf"
+          colorBack="#000c38"
+          colorHighlight="#eaff94"
+          colorSteps={2}
+          originalColors={false}
+          inverted={false}
+          style={{ width: 600, height: 400 }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, imageDitheringFragmentShader, DitheringTypes } from '@paper-design/shaders';
+
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.src = '/my-photo.jpg';
+
+    image.addEventListener('load', () => {
+      const container = document.querySelector('#canvas-container');
+
+      const shader = new ShaderMount(container, imageDitheringFragmentShader, {
+        u_image: image,
+        u_colorFront: [0.58, 1, 0.69, 1],
+        u_colorBack: [0, 0.047, 0.22, 1],
+        u_colorHighlight: [0.918, 1, 0.58, 1],
+        u_type: DitheringTypes['8x8'],
+        u_pxSize: 2,
+        u_colorSteps: 2,
+        u_originalColors: false,
+        u_inverted: false,
+      });
+    });
+    ```
+
+    <Note>
+      The `HTMLImageElement` must be fully loaded before passing it to `ShaderMount`. Listen for the `load` event as shown above.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="image" type="string (React) | HTMLImageElement (vanilla JS)" required>
+  The source image to dither. In React, pass a URL string — the component loads it automatically. In vanilla JS, pass a fully loaded `HTMLImageElement` as `u_image`.
+</ParamField>
+
+<ParamField path="type" type="DitheringType" default="'8x8'">
+  The dithering algorithm. Use the `DitheringTypes` enum (vanilla JS) or string literal (React).
+
+  | Value | Description |
+  |---|---|
+  | `random` | Randomized threshold dithering |
+  | `2x2` | 2×2 Bayer ordered dithering |
+  | `4x4` | 4×4 Bayer ordered dithering |
+  | `8x8` | 8×8 Bayer ordered dithering |
+</ParamField>
+
+<ParamField path="size" type="number" default="2">
+  Pixel size of the dithering grid in screen pixels. Range: `0.5` to `20`.
+</ParamField>
+
+<ParamField path="colorSteps" type="number" default="2">
+  Number of quantization levels applied to both color modes. Range: `1` to `7`.
+</ParamField>
+
+<ParamField path="originalColors" type="boolean" default="false">
+  When `true`, colors are sampled directly from the original image rather than using the `colorFront` / `colorBack` / `colorHighlight` palette.
+</ParamField>
+
+<ParamField path="inverted" type="boolean" default="false">
+  Inverts the image luminance before dithering. Has no effect when `colorSteps` is at its minimum (zero contrast).
+</ParamField>
+
+<ParamField path="colorFront" type="string" default="'#94ffaf'">
+  Foreground (dark) color used in the dithering palette when `originalColors` is `false`.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="'#000c38'">
+  Background (light) color used in the dithering palette when `originalColors` is `false`.
+</ParamField>
+
+<ParamField path="colorHighlight" type="string" default="'#eaff94'">
+  Secondary foreground color blended in at the brightest steps. Set equal to `colorFront` for classic 2-color dithering.
+</ParamField>
+
+## Presets
+
+The following presets are exported from `@paper-design/shaders-react`:
+
+| Export | Name | Description |
+|---|---|---|
+| `defaultPreset` | Default | 8×8 Bayer with a green/navy palette |
+| `noisePreset` | Noise | Random dithering in monochrome |
+| `retroPreset` | Retro | 2×2 Bayer using original image colors |
+| `naturalPreset` | Natural | 8×8 Bayer in grayscale with 5 color steps |
+
+```ts
+import { imageDitheringPresets } from '@paper-design/shaders-react';
+```
+
+## Enums
+
+Import `DitheringTypes` from `@paper-design/shaders` when using the vanilla JS API:
+
+```ts
+import { DitheringTypes } from '@paper-design/shaders';
+
+// DitheringTypes: random | '2x2' | '4x4' | '8x8'
+```

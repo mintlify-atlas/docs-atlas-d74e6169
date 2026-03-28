@@ -1,0 +1,166 @@
+---
+title: "Heatmap"
+description: "A glowing gradient of colors flowing through an input image. The effect creates a smoothly animated wave of intensity across the image."
+---
+
+Heatmap applies a multi-color glowing gradient that flows through an input shape or logo. The effect produces inner and outer glows that animate along a configurable axis, with support for up to 10 gradient colors.
+
+<Note>
+  This shader requires an image preprocessing step before passing to the GPU. The `toProcessedHeatmap` helper must be called first to generate the required texture encoding. The React component handles this automatically. In vanilla JS, call `toProcessedHeatmap` yourself and pass the result as `u_image`.
+</Note>
+
+<Warning>
+  `toProcessedHeatmap` uses the Canvas 2D API for image processing, which is not supported in Safari's WebGL context without the preprocessing step. Always use `toProcessedHeatmap` rather than passing the raw image directly.
+</Warning>
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { Heatmap } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <Heatmap
+          image="/my-logo.png"
+          speed={1}
+          contour={0.5}
+          angle={0}
+          noise={0}
+          innerGlow={0.5}
+          outerGlow={0.5}
+          colorBack="#000000"
+          colors={['#11206a', '#1f3ba2', '#2f63e7', '#6bd7ff', '#ffe679', '#ff991e', '#ff4c00']}
+          style={{ width: 400, height: 400 }}
+        />
+      );
+    }
+    ```
+
+    The React component calls `toProcessedHeatmap` internally and re-runs it whenever `image` changes. Use the `suspendWhenProcessingImage` prop to integrate with React Suspense:
+
+    ```tsx
+    <Suspense fallback={<div>Loading...</div>}>
+      <Heatmap image="/my-logo.png" suspendWhenProcessingImage />
+    </Suspense>
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      heatmapFragmentShader,
+      toProcessedHeatmap,
+      getShaderColorFromString,
+    } from '@paper-design/shaders';
+
+    async function init() {
+      const { blob } = await toProcessedHeatmap('/my-logo.png');
+      const processedUrl = URL.createObjectURL(blob);
+
+      const processedImage = new Image();
+      processedImage.src = processedUrl;
+
+      processedImage.addEventListener('load', () => {
+        const container = document.querySelector('#canvas-container');
+
+        const shader = new ShaderMount(container, heatmapFragmentShader, {
+          u_image: processedImage,
+          u_contour: 0.5,
+          u_angle: 0,
+          u_noise: 0,
+          u_innerGlow: 0.5,
+          u_outerGlow: 0.5,
+          u_colorBack: [0, 0, 0, 1],
+          u_colors: [
+            '#11206a', '#1f3ba2', '#2f63e7',
+            '#6bd7ff', '#ffe679', '#ff991e', '#ff4c00',
+          ].map(getShaderColorFromString),
+          u_colorsCount: 7,
+        });
+      });
+    }
+
+    init();
+    ```
+
+    <Note>
+      Call `toProcessedHeatmap` with the image URL or `File` object. It returns a `Promise<{ blob: Blob }>`. Create an object URL from the blob, load it into an `HTMLImageElement`, and pass that element as `u_image` only after it has loaded.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="image" type="string (React) | HTMLImageElement (vanilla JS)" required>
+  The source image (logo, icon, or shape) to apply the heatmap effect to. In React, pass a URL string. In vanilla JS, pass the pre-processed `HTMLImageElement` returned by `toProcessedHeatmap`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="1">
+  Animation playback speed multiplier.
+</ParamField>
+
+<ParamField path="colors" type="string[]" default="['#11206a', '#1f3ba2', '#2f63e7', '#6bd7ff', '#ffe679', '#ff991e', '#ff4c00']">
+  Array of up to 10 CSS color strings defining the heatmap gradient from coolest to hottest.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="'#000000'">
+  Background color shown behind the effect.
+</ParamField>
+
+<ParamField path="contour" type="number" default="0.5">
+  Heat intensity near the edges of the input shape. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="innerGlow" type="number" default="0.5">
+  Size of the heated area inside the input shape. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="outerGlow" type="number" default="0.5">
+  Size of the heated area outside the input shape. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="angle" type="number" default="0">
+  Direction of the heatwave animation in degrees. Range: `0` to `360`.
+</ParamField>
+
+<ParamField path="noise" type="number" default="0">
+  Amount of grain applied across the entire graphic. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="suspendWhenProcessingImage" type="boolean" default="false">
+  React only. When `true`, the component suspends while `toProcessedHeatmap` is running. Wrap in a `<Suspense>` boundary to provide a fallback.
+</ParamField>
+
+## Presets
+
+The following presets are exported from `@paper-design/shaders-react`:
+
+| Export | Name | Description |
+|---|---|---|
+| `defaultPreset` | Default | Classic heatmap from deep blue to orange-red |
+| `sepiaPreset` | Sepia | Two-color sepia tone with added noise |
+
+```ts
+import { heatmapPresets } from '@paper-design/shaders-react';
+```
+
+## `toProcessedHeatmap` helper
+
+`toProcessedHeatmap` performs a CPU-side preprocessing pass that encodes the image into the multi-channel texture the shader expects:
+
+```ts
+import { toProcessedHeatmap } from '@paper-design/shaders';
+
+const { blob } = await toProcessedHeatmap('/my-logo.png');
+// or pass a File object:
+const { blob } = await toProcessedHeatmap(file);
+```
+
+The returned `blob` is a PNG where:
+- **R channel** — contour (edge gradient)
+- **G channel** — outer blur
+- **B channel** — inner blur
+
+This preprocessing step is required for correct rendering and Safari compatibility.

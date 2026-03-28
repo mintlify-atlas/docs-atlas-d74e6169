@@ -1,0 +1,171 @@
+---
+title: "Halftone Dots"
+description: "A halftone-dot image filter featuring customizable grids, color palettes, and dot styles."
+---
+
+Halftone Dots is an image filter shader that converts an input image into a halftone dot pattern. Grid layout (square or hex), dot style, size, contrast, color palette, and grain are all independently configurable.
+
+<Note>
+  This is an image filter shader — it requires an image input. In React, pass a URL string to the `image` prop and it is loaded automatically. In vanilla JS, pass a fully loaded `HTMLImageElement` to `u_image`.
+</Note>
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { HalftoneDots } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <HalftoneDots
+          image="/my-photo.jpg"
+          type="gooey"
+          grid="hex"
+          size={0.5}
+          radius={1.25}
+          contrast={0.4}
+          colorFront="#2b2b2b"
+          colorBack="#f2f1e8"
+          originalColors={false}
+          inverted={false}
+          grainMixer={0.2}
+          grainOverlay={0.2}
+          grainSize={0.5}
+          style={{ width: 600, height: 400 }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      halftoneDotsFragmentShader,
+      HalftoneDotsTypes,
+      HalftoneDotsGrids,
+    } from '@paper-design/shaders';
+
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.src = '/my-photo.jpg';
+
+    image.addEventListener('load', () => {
+      const container = document.querySelector('#canvas-container');
+
+      const shader = new ShaderMount(container, halftoneDotsFragmentShader, {
+        u_image: image,
+        u_colorFront: [0.169, 0.169, 0.169, 1],
+        u_colorBack: [0.949, 0.945, 0.91, 1],
+        u_type: HalftoneDotsTypes.gooey,
+        u_grid: HalftoneDotsGrids.hex,
+        u_size: 0.5,
+        u_radius: 1.25,
+        u_contrast: 0.4,
+        u_originalColors: false,
+        u_inverted: false,
+        u_grainMixer: 0.2,
+        u_grainOverlay: 0.2,
+        u_grainSize: 0.5,
+      });
+    });
+    ```
+
+    <Note>
+      The `HTMLImageElement` must be fully loaded before passing it to `ShaderMount`. Listen for the `load` event as shown above.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="image" type="string (React) | HTMLImageElement (vanilla JS)" required>
+  The source image to filter. In React, pass a URL string — the component loads it automatically. In vanilla JS, pass a fully loaded `HTMLImageElement` as `u_image`.
+</ParamField>
+
+<ParamField path="type" type="HalftoneDotsType" default="'gooey'">
+  Dot style. Use the `HalftoneDotsTypes` enum (vanilla JS) or string literal (React).
+
+  | Value | Description |
+  |---|---|
+  | `classic` | Crisp circular dots |
+  | `gooey` | Soft blobs that merge together |
+  | `holes` | Inverted circle with holes |
+  | `soft` | Diffuse, feathered blobs |
+</ParamField>
+
+<ParamField path="grid" type="HalftoneDotsGrid" default="'hex'">
+  Grid layout for dot placement. Use the `HalftoneDotsGrids` enum (vanilla JS) or string literal (React).
+
+  | Value | Description |
+  |---|---|
+  | `square` | Regular square grid |
+  | `hex` | Hexagonal offset grid |
+</ParamField>
+
+<ParamField path="size" type="number" default="0.5">
+  Grid size relative to the image box. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="radius" type="number" default="1.25">
+  Maximum dot size relative to the grid cell. Range: `0` to `2`.
+</ParamField>
+
+<ParamField path="contrast" type="number" default="0.4">
+  Contrast applied to the sampled image before determining dot sizes. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="originalColors" type="boolean" default="false">
+  When `true`, each dot uses the sampled color from the source image instead of `colorFront`.
+</ParamField>
+
+<ParamField path="inverted" type="boolean" default="false">
+  Inverts the image luminance before determining dot sizes. Has no effect when contrast is zero.
+</ParamField>
+
+<ParamField path="colorFront" type="string" default="'#2b2b2b'">
+  Foreground (dot) color used when `originalColors` is `false`.
+</ParamField>
+
+<ParamField path="colorBack" type="string" default="'#f2f1e8'">
+  Background color shown between dots.
+</ParamField>
+
+<ParamField path="grainMixer" type="number" default="0.2">
+  Strength of grain distortion applied to the dot edges. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="grainOverlay" type="number" default="0.2">
+  Post-processing black/white grain overlay strength. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="grainSize" type="number" default="0.5">
+  Scale applied to both grain distortion and the grain overlay. Range: `0` to `1`.
+</ParamField>
+
+## Presets
+
+The following presets are exported from `@paper-design/shaders-react`:
+
+| Export | Name | Description |
+|---|---|---|
+| `defaultPreset` | Default | Gooey hex grid, warm paper tones |
+| `ledPreset` | LED screen | Square grid, green on black, soft type |
+| `netPreset` | Mosaic | Classic hex grid using original image colors |
+| `roundAndSquarePreset` | Round and square | Square grid, holes type, inverted contrast |
+
+```ts
+import { halftoneDotsPresets } from '@paper-design/shaders-react';
+```
+
+## Enums
+
+Import `HalftoneDotsTypes` and `HalftoneDotsGrids` from `@paper-design/shaders` when using the vanilla JS API:
+
+```ts
+import { HalftoneDotsTypes, HalftoneDotsGrids } from '@paper-design/shaders';
+
+// HalftoneDotsTypes: classic | gooey | holes | soft
+// HalftoneDotsGrids: square | hex
+```

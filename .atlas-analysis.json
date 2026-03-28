@@ -1,23 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "Shaders",
+  "projectType": "sdk-library",
+  "projectName": "Shaders",
+  "projectDescription": "Zero-dependency WebGL canvas shaders available as npm packages for vanilla JS and React, enabling animated and customizable visual effects like gradients, noise, and image filters.",
   "theme": "willow",
-  "colors": {
-    "primary": "#84acec",
-    "light": "#f3f4f4"
-  },
-  "favicon": "https://media.brand.dev/154bd5ed-d74d-4bb4-a820-c2c334df0c37.png",
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/paper-design/shaders"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/paper-design/shaders"
-    }
-  },
+  "primaryColor": "#84acec",
+  "lightColor": "#f3f4f4",
+  "darkColor": null,
   "navigation": {
     "tabs": [
       {
@@ -104,5 +92,31 @@
         ]
       }
     ]
-  }
+  },
+  "keyFeatures": [
+    "28 ready-to-use WebGL shaders including gradients, noise patterns, and image filters",
+    "Zero runtime dependencies — pure WebGL2 canvas rendering",
+    "React component wrappers with full TypeScript support",
+    "Animated with controllable speed, frame offset, and direction",
+    "Highly customizable via typed props (colors, distortion, scale, fit, rotation, etc.)",
+    "Automatic canvas resizing with configurable pixel ratio and max pixel count",
+    "Image filter shaders (fluted glass, water, dithering, heatmap, liquid metal, halftone)",
+    "Server-side rendering (SSR) safe with undefined uniform handling",
+    "Designed in Paper — export directly to code"
+  ],
+  "publicApiSurface": [
+    "ShaderMount (vanilla JS class)",
+    "ShaderMount (React component)",
+    "MeshGradient", "StaticMeshGradient", "StaticRadialGradient",
+    "SimplexNoise", "PerlinNoise", "NeuroNoise",
+    "SmokeRing", "Metaballs", "DotOrbit", "DotGrid",
+    "Voronoi", "Warp", "Waves", "GrainGradient",
+    "GodRays", "Swirl", "Spiral", "Dithering",
+    "PulsingBorder", "ColorPanels", "PaperTexture",
+    "FlutedGlass", "Water", "ImageDithering", "Heatmap",
+    "LiquidMetal", "HalftoneDots", "HalftoneCmyk",
+    "ShaderSizingParams", "ShaderFit", "ShaderPreset",
+    "getShaderColorFromString", "getShaderNoiseTexture",
+    "isPaperShaderElement"
+  ]
 }

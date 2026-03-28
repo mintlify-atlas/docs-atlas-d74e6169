@@ -1,0 +1,106 @@
+---
+title: "Dot Orbit"
+description: "Animated multi-color dots pattern with each dot orbiting around its cell center. Supports up to 10 colors and various shape and motion controls. Great for playful, dynamic backgrounds and UI textures."
+---
+
+An animated dots pattern where each dot orbits around its Voronoi cell center. Supports up to 10 colors with interpolation steps between them, plus controls for dot size, size randomization, and orbit spread. Great for playful, dynamic backgrounds and UI textures.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { DotOrbit } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <DotOrbit
+          colorBack="#000000"
+          colors={['#ffc96b', '#ff6200', '#ff2f00', '#421100', '#1a0000']}
+          size={1}
+          sizeRange={0}
+          spreading={1}
+          stepsPerColor={4}
+          speed={1.5}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      dotOrbitFragmentShader,
+      getShaderNoiseTexture,
+    } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, dotOrbitFragmentShader, {
+      u_colorBack: [0, 0, 0, 1],
+      u_colors: [
+        [1, 0.788, 0.420, 1],
+        [1, 0.384, 0, 1],
+        [1, 0.184, 0, 1],
+        [0.259, 0.067, 0, 1],
+        [0.102, 0, 0, 1],
+      ],
+      u_colorsCount: 5,
+      u_size: 1,
+      u_sizeRange: 0,
+      u_spreading: 1,
+      u_stepsPerColor: 4,
+      u_noiseTexture: getShaderNoiseTexture(),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorBack" type="string" default="#000000">
+  Background color behind the dots.
+</ParamField>
+
+<ParamField path="colors" type="string[]" default='["#ffc96b","#ff6200","#ff2f00","#421100","#1a0000"]'>
+  Array of up to 10 colors cycled across the dot grid.
+</ParamField>
+
+<ParamField path="size" type="number" default="1">
+  Dot radius relative to the cell size. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="sizeRange" type="number" default="0">
+  Random variation in dot size. `0` = uniform, higher = random up to base size. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="spreading" type="number" default="1">
+  Maximum orbit distance from the cell center. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="stepsPerColor" type="number" default="4">
+  Number of interpolation steps between base colors. `1` = N discrete colors, `4` = 4× more gradations. Range: `1` to `4`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="1.5">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Static frame position when `speed` is `0`.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | Warm fire-tone dots orbiting on black |
+| `Bubbles` | Large grey bubbles with size variation |
+| `Shine` | Small blue, white and gold dots |
+| `Hallucinatory` | Single black dot pattern on yellow |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

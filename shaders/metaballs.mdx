@@ -1,0 +1,95 @@
+---
+title: "Metaballs"
+description: "Up to 20 gooey blobs moving around the center and merging into smooth organic shapes."
+---
+
+Up to 20 colored gooey blobs orbit the canvas center and merge into smooth organic shapes through an implicit surface technique. Each ball is independently animated with noise-driven motion. Supports up to 8 colors distributed across the balls.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { Metaballs } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <Metaballs
+          colorBack="#000000"
+          colors={['#6e33cc', '#ff5500', '#ffc105', '#ffc800', '#f585ff']}
+          count={10}
+          size={0.83}
+          speed={1}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      metaballsFragmentShader,
+      getShaderColorFromString,
+      getShaderNoiseTexture,
+    } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, metaballsFragmentShader, {
+      u_colorBack: [0, 0, 0, 1],
+      u_colors: [
+        [0.431, 0.200, 0.800, 1],
+        [1, 0.333, 0, 1],
+        [1, 0.753, 0.020, 1],
+        [1, 0.784, 0, 1],
+        [0.961, 0.522, 1, 1],
+      ],
+      u_colorsCount: 5,
+      u_count: 10,
+      u_size: 0.83,
+      u_noiseTexture: getShaderNoiseTexture(),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorBack" type="string" default="#000000">
+  Background color behind the metaballs.
+</ParamField>
+
+<ParamField path="colors" type="string[]" default='["#6e33cc","#ff5500","#ffc105","#ffc800","#f585ff"]'>
+  Array of up to 8 colors distributed across the blobs.
+</ParamField>
+
+<ParamField path="count" type="number" default="10">
+  Number of blobs. Range: `1` to `20`.
+</ParamField>
+
+<ParamField path="size" type="number" default="0.83">
+  Size of the blobs. Higher values produce larger, more merged shapes. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="1">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Static frame position when `speed` is `0`.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | Multi-color blobs on black |
+| `Ink Drops` | Small black drops on transparent background |
+| `Solar` | Orange and gold blobs on deep blue |
+| `Background` | Large soft blobs for a full-bleed background |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

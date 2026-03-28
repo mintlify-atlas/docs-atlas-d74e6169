@@ -1,0 +1,148 @@
+---
+title: "Static Radial Gradient"
+description: "Radial gradient with up to 10 blended colors, featuring advanced focal point control, shape distortion, and grain effects."
+---
+
+Static Radial Gradient renders a radial gradient from a focal point outward through up to 10 colors. The focal point can be offset from the center of the shape, creating conic-like gradients. A distortion parameter adds radial petal or ripple patterns along the gradient boundary, and grain controls add noise texture on top.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { StaticRadialGradient } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <StaticRadialGradient
+          colorBack="#000000"
+          colors={['#00bbff', '#00ffe1', '#ffffff']}
+          radius={0.8}
+          focalDistance={0.99}
+          focalAngle={0}
+          falloff={0.24}
+          mixing={0.5}
+          distortion={0}
+          distortionShift={0}
+          distortionFreq={12}
+          grainMixer={0}
+          grainOverlay={0}
+          speed={0}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import { ShaderMount, staticRadialGradientFragmentShader, getShaderColorFromString, ShaderFitOptions } from '@paper-design/shaders';
+
+    const container = document.getElementById('shader-container');
+
+    const colors = ['#00bbff', '#00ffe1', '#ffffff'];
+
+    const mount = new ShaderMount(container, staticRadialGradientFragmentShader, {
+      u_colorBack: getShaderColorFromString('#000000'),
+      u_colors: colors.map(getShaderColorFromString),
+      u_colorsCount: colors.length,
+      u_radius: 0.8,
+      u_focalDistance: 0.99,
+      u_focalAngle: 0,
+      u_falloff: 0.24,
+      u_mixing: 0.5,
+      u_distortion: 0,
+      u_distortionShift: 0,
+      u_distortionFreq: 12,
+      u_grainMixer: 0,
+      u_grainOverlay: 0,
+      u_fit: ShaderFitOptions['contain'],
+      u_scale: 1,
+      u_rotation: 0,
+      u_offsetX: 0,
+      u_offsetY: 0,
+      u_originX: 0.5,
+      u_originY: 0.5,
+      u_worldWidth: 0,
+      u_worldHeight: 0,
+    }, undefined, 0);
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField body="colorBack" type="string" default='"#000000"'>
+  Background color shown outside the gradient shape. Accepts any CSS color string.
+</ParamField>
+
+<ParamField body="colors" type="string[]" default='["#00bbff", "#00ffe1", "#ffffff"]'>
+  Array of CSS color strings blended from the focal point outward. Accepts up to 10 colors.
+</ParamField>
+
+<ParamField body="radius" type="number" default="0.8">
+  Size of the gradient shape. Range `0` to `3`.
+</ParamField>
+
+<ParamField body="focalDistance" type="number" default="0.99">
+  Distance of the focal point from the center of the shape. A value of `0` places the focal point at the center (standard radial gradient). Range `0` to `3`.
+</ParamField>
+
+<ParamField body="focalAngle" type="number" default="0">
+  Angle of the focal point in degrees. Only effective when `focalDistance` is greater than `0`. Range `0` to `360`.
+</ParamField>
+
+<ParamField body="falloff" type="number" default="0.24">
+  Controls the gradient decay curve. `0` produces a linear gradient. Positive values accelerate the falloff; negative values slow it. Range `-1` to `1`.
+</ParamField>
+
+<ParamField body="mixing" type="number" default="0.5">
+  Blending behavior between colors. `0` produces hard stripes, `1` produces a smooth gradient. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="distortion" type="number" default="0">
+  Strength of radial boundary distortion. Creates petal or ripple patterns along color edges. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="distortionShift" type="number" default="0">
+  Radial offset of the distortion effect. Only effective when `distortion` is greater than `0`. Range `-1` to `1`.
+</ParamField>
+
+<ParamField body="distortionFreq" type="number" default="12">
+  Frequency (number of petals or ripple peaks) of the distortion. Only effective when `distortion` is greater than `0`. Range `0` to `20`.
+</ParamField>
+
+<ParamField body="grainMixer" type="number" default="0">
+  Strength of grain distortion applied to color edges. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="grainOverlay" type="number" default="0">
+  Post-processing black/white film grain overlay blended on top of the final color. Range `0` to `1`.
+</ParamField>
+
+<ParamField body="speed" type="number" default="0">
+  Animation speed multiplier. The default is `0` (static).
+</ParamField>
+
+<ParamField body="frame" type="number" default="0">
+  Starting animation frame in milliseconds.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `defaultPreset` | Cyan-to-white on black with an offset focal point giving a cone-like shape. |
+| `loFiPreset` | Three warm colors on dark purple with heavy grain for a lo-fi aesthetic. |
+| `crossSectionPreset` | Four-color radial with maximum distortion creating a cross-section look. |
+| `radialPreset` | Smooth sunset radial gradient from center with no distortion. |
+
+Import presets from `@paper-design/shaders-react`:
+
+```ts
+import { staticRadialGradientPresets } from '@paper-design/shaders-react';
+```
+
+## Sizing props
+
+Static Radial Gradient also accepts all `ShaderSizingParams` (`fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, `worldHeight`). See [Sizing and fit](/concepts/sizing-and-fit) for details.

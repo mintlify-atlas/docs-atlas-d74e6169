@@ -1,0 +1,107 @@
+---
+title: "Smoke Ring"
+description: "Radial multi-colored gradient shaped with layered noise for a natural, smoky aesthetic."
+---
+
+A radial multi-colored gradient shaped with layered value noise for a natural, smoky aesthetic. The noise displaces a polar coordinate ring to produce the characteristic wispy, organic edge. Supports up to 10 gradient colors and controls for ring radius, thickness, and noise complexity.
+
+## Usage
+
+<Tabs>
+  <Tab title="React">
+    ```tsx
+    import { SmokeRing } from '@paper-design/shaders-react';
+
+    export default function Example() {
+      return (
+        <SmokeRing
+          colorBack="#000000"
+          colors={['#ffffff']}
+          noiseScale={3}
+          noiseIterations={8}
+          radius={0.25}
+          thickness={0.65}
+          innerShape={0.7}
+          speed={0.5}
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Vanilla JS">
+    ```ts
+    import {
+      ShaderMount,
+      smokeRingFragmentShader,
+      getShaderColorFromString,
+      getShaderNoiseTexture,
+    } from '@paper-design/shaders';
+
+    const container = document.querySelector('#canvas-container');
+
+    const shader = new ShaderMount(container, smokeRingFragmentShader, {
+      u_colorBack: [0, 0, 0, 1],
+      u_colors: [[1, 1, 1, 1]],
+      u_colorsCount: 1,
+      u_noiseScale: 3,
+      u_noiseIterations: 8,
+      u_radius: 0.25,
+      u_thickness: 0.65,
+      u_innerShape: 0.7,
+      u_noiseTexture: getShaderNoiseTexture(),
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Props
+
+<ParamField path="colorBack" type="string" default="#000000">
+  Background color behind the ring.
+</ParamField>
+
+<ParamField path="colors" type="string[]" default='["#ffffff"]'>
+  Array of up to 10 gradient colors applied across the ring from inside to outside.
+</ParamField>
+
+<ParamField path="radius" type="number" default="0.25">
+  Radius of the ring shape as a fraction of the canvas. Range: `0` to `1`.
+</ParamField>
+
+<ParamField path="thickness" type="number" default="0.65">
+  Thickness of the ring relative to its radius. Range: `0.01` to `1`.
+</ParamField>
+
+<ParamField path="innerShape" type="number" default="0.7">
+  Amount of inner fill inside the ring. `0` = fully hollow, `4` = fully filled. Range: `0` to `4`.
+</ParamField>
+
+<ParamField path="noiseScale" type="number" default="3">
+  Frequency of the noise distortion applied to the ring. Range: `0.01` to `5`.
+</ParamField>
+
+<ParamField path="noiseIterations" type="number" default="8">
+  Number of noise layers. More iterations produce finer detail. Range: `1` to `8`.
+</ParamField>
+
+<ParamField path="speed" type="number" default="0.5">
+  Animation speed multiplier. Set to `0` to pause.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Static frame position when `speed` is `0`.
+</ParamField>
+
+## Presets
+
+| Name | Description |
+|------|-------------|
+| `Default` | White smoke ring on black |
+| `Solar` | Multi-color solar corona with offset |
+| `Line` | Thin glowing blue ring |
+| `Cloud` | White cloud shape on a sky-blue background |
+
+## Sizing
+
+This shader uses `ShaderSizingParams`. See [Sizing and fit](/concepts/sizing-and-fit) for `fit`, `scale`, `rotation`, `offsetX`, `offsetY`, `originX`, `originY`, `worldWidth`, and `worldHeight` props.

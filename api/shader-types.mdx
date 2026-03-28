@@ -1,0 +1,192 @@
+---
+title: "Type reference"
+description: "TypeScript types exported from @paper-design/shaders"
+---
+
+## Core types
+
+### ShaderMountUniforms
+
+The map of uniform values you pass to `ShaderMount`. Keys are the uniform names as they appear in your GLSL shader (e.g. `u_color`).
+
+```ts
+interface ShaderMountUniforms {
+  [key: string]: boolean | number | number[] | number[][] | HTMLImageElement | undefined;
+}
+```
+
+Supported value types and how they map to GLSL:
+
+| JS type | GLSL type(s) |
+|---|---|
+| `boolean` | `bool` / `int` (true → 1, false → 0) |
+| `number` | `float` |
+| `number[]` (length 2) | `vec2` |
+| `number[]` (length 3) | `vec3` |
+| `number[]` (length 4) | `vec4` |
+| `number[]` (length 9) | `mat3` |
+| `number[]` (length 16) | `mat4` |
+| `number[][]` (array of same-length arrays) | `vec2[]`, `vec4[]`, etc. |
+| `HTMLImageElement` | `sampler2D` |
+| `undefined` | skipped (safe for SSR) |
+
+<Note>
+`undefined` is accepted as a convenience for server-side rendering, where some values (especially images) may not be available yet. The uniform is simply skipped rather than causing an error.
+</Note>
+
+When an `HTMLImageElement` is passed, `ShaderMount` automatically uploads it as a WebGL texture and also sets a companion `<uniformName>AspectRatio` uniform (float) if that uniform exists in your shader.
+
+---
+
+### ShaderMotionParams
+
+Params shared by all animated shaders for controlling playback.
+
+```ts
+interface ShaderMotionParams {
+  speed?: number;
+  frame?: number;
+}
+```
+
+| Prop | Default | Description |
+|---|---|---|
+| `speed` | `0` | Animation speed multiplier. `0` = static, negative = reverse. |
+| `frame` | `0` | Starting frame offset in milliseconds. |
+
+---
+
+### ShaderPreset
+
+A named configuration for a shader. The `params` object contains all required params for that shader.
+
+```ts
+type ShaderPreset<T> = {
+  name: string;
+  params: Required<T>;
+};
+```
+
+**Example** — using a preset with `MeshGradient`:
+
+```ts
+import { meshGradientPresets } from '@paper-design/shaders-react';
+
+// meshGradientPresets is ShaderPreset<MeshGradientParams>[]
+const preset = meshGradientPresets[0];
+console.log(preset.name);   // "Default"
+console.log(preset.params); // { colors: [...], distortion: 0.8, speed: 1, ... }
+```
+
+---
+
+### ImageShaderPreset
+
+Like `ShaderPreset`, but the `image` key is excluded from `params`. This is used for image-filter shaders (e.g. `FlutedGlass`, `ImageDithering`) where the image is controlled separately from the preset and shouldn't change when switching between presets.
+
+```ts
+type ImageShaderPreset<T> = {
+  name: string;
+  params: Required<Omit<T, 'image'>>;
+};
+```
+
+---
+
+### PaperShaderElement
+
+An `HTMLElement` extended with a `paperShaderMount` property. This is the type of `ShaderMount.parentElement` and the type returned to a `ref` in the React component.
+
+```ts
+interface PaperShaderElement extends HTMLElement {
+  paperShaderMount: ShaderMount | undefined;
+}
+```
+
+Use the [`isPaperShaderElement`](/api/shader-mount-class#ispapershaderelement) type guard to narrow a plain `HTMLElement` to this type.
+
+---
+
+### vec2, vec3, vec4
+
+Tuple types used in shader param and uniform interfaces to represent GLSL vector types.
+
+```ts
+type vec2 = [number, number];
+type vec3 = [number, number, number];
+type vec4 = [number, number, number, number];
+```
+
+These are used throughout the shader uniform interfaces. For example, `MeshGradientUniforms` uses `vec4[]` for the `u_colors` uniform.
+
+---
+
+## Per-shader types
+
+Every shader exported from `@paper-design/shaders` follows the same pattern: a `<Name>Params` interface for human-friendly prop values, and a `<Name>Uniforms` interface for the raw GLSL uniform values.
+
+### The pattern
+
+```ts
+// Human-friendly params (what you write in your component props or config)
+interface MeshGradientParams extends ShaderSizingParams, ShaderMotionParams {
+  colors?: string[];      // CSS color strings
+  distortion?: number;
+  swirl?: number;
+  grainMixer?: number;
+  grainOverlay?: number;
+}
+
+// Raw uniforms (what gets passed to ShaderMount)
+interface MeshGradientUniforms extends ShaderSizingUniforms {
+  u_colors: vec4[];       // RGBA arrays in 0–1 range
+  u_colorsCount: number;
+  u_distortion: number;
+  u_swirl: number;
+  u_grainMixer: number;
+  u_grainOverlay: number;
+}
+```
+
+The React component for each shader converts from `Params` to `Uniforms` internally — for example, calling `getShaderColorFromString` on each color string to produce a `vec4`.
+
+### Available shader types
+
+The same `<Name>Params` / `<Name>Uniforms` pattern applies to all exported shaders:
+
+<Expandable title="Full list of shader param/uniform types">
+
+| Shader | Params type | Uniforms type |
+|---|---|---|
+| MeshGradient | `MeshGradientParams` | `MeshGradientUniforms` |
+| SmokeRing | `SmokeRingParams` | `SmokeRingUniforms` |
+| NeuroNoise | `NeuroNoiseParams` | `NeuroNoiseUniforms` |
+| DotOrbit | `DotOrbitParams` | `DotOrbitUniforms` |
+| DotGrid | `DotGridParams` | `DotGridUniforms` |
+| SimplexNoise | `SimplexNoiseParams` | `SimplexNoiseUniforms` |
+| Metaballs | `MetaballsParams` | `MetaballsUniforms` |
+| Waves | `WavesParams` | `WavesUniforms` |
+| PerlinNoise | `PerlinNoiseParams` | `PerlinNoiseUniforms` |
+| Voronoi | `VoronoiParams` | `VoronoiUniforms` |
+| Warp | `WarpParams` | `WarpUniforms` |
+| GodRays | `GodRaysParams` | `GodRaysUniforms` |
+| Spiral | `SpiralParams` | `SpiralUniforms` |
+| Swirl | `SwirlParams` | `SwirlUniforms` |
+| Dithering | `DitheringParams` | `DitheringUniforms` |
+| GrainGradient | `GrainGradientParams` | `GrainGradientUniforms` |
+| PulsingBorder | `PulsingBorderParams` | `PulsingBorderUniforms` |
+| ColorPanels | `ColorPanelsParams` | `ColorPanelsUniforms` |
+| StaticMeshGradient | `StaticMeshGradientParams` | `StaticMeshGradientUniforms` |
+| StaticRadialGradient | `StaticRadialGradientParams` | `StaticRadialGradientUniforms` |
+| PaperTexture | `PaperTextureParams` | `PaperTextureUniforms` |
+| FlutedGlass | `FlutedGlassParams` | `FlutedGlassUniforms` |
+| Water | `WaterParams` | `WaterUniforms` |
+| ImageDithering | `ImageDitheringParams` | `ImageDitheringUniforms` |
+| Heatmap | `HeatmapParams` | `HeatmapUniforms` |
+| LiquidMetal | `LiquidMetalParams` | `LiquidMetalUniforms` |
+| HalftoneDots | `HalftoneDotsParams` | `HalftoneDotsUniforms` |
+| HalftoneCmyk | `HalftoneCmykParams` | `HalftoneCmykUniforms` |
+
+</Expandable>
+
+All types are exported from `@paper-design/shaders` and re-exported from `@paper-design/shaders-react`.

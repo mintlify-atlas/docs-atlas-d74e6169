@@ -1,0 +1,191 @@
+---
+title: "Sizing API"
+description: "Control how shaders fill and position within their container"
+---
+
+The sizing API controls how a shader's content fills and is positioned within its canvas. It mirrors the mental model of CSS `object-fit` / `background-size`, extended with rotation, offset, and world-size controls.
+
+Sizing params are included in every shader's `Params` type (via `ShaderSizingParams`) and are processed into uniforms (via `ShaderSizingUniforms`) before being passed to the GPU.
+
+## ShaderSizingParams
+
+```ts
+interface ShaderSizingParams {
+  fit?: 'none' | 'contain' | 'cover';
+  scale?: number;
+  rotation?: number;
+  originX?: number;
+  originY?: number;
+  offsetX?: number;
+  offsetY?: number;
+  worldWidth?: number;
+  worldHeight?: number;
+}
+```
+
+<ParamField path="fit" type="'none' | 'contain' | 'cover'" default="depends on shader">
+  Controls how the shader content scales to fill the canvas. Works analogously to CSS `object-fit`.
+
+  - `'none'` — No scaling. The shader is rendered at its intrinsic/world size. Tiles if the canvas is larger. Used for repeating patterns.
+  - `'contain'` — Scales the content to fit within the canvas while preserving its aspect ratio. Letterboxed if the canvas has a different aspect ratio.
+  - `'cover'` — Scales the content to fill the entire canvas while preserving its aspect ratio. Content may be cropped.
+</ParamField>
+
+<ParamField path="scale" type="number" default="1">
+  Zoom level applied on top of the `fit` scaling. `1` is no additional zoom. Values above `1` zoom in; values below `1` zoom out.
+</ParamField>
+
+<ParamField path="rotation" type="number" default="0">
+  Rotation of the shader content in degrees (`0` to `360`).
+</ParamField>
+
+<ParamField path="originX" type="number" default="0.5">
+  Horizontal anchor point for positioning. `0` = left edge, `0.5` = center, `1` = right edge.
+</ParamField>
+
+<ParamField path="originY" type="number" default="0.5">
+  Vertical anchor point for positioning. `0` = top edge, `0.5` = center, `1` = bottom edge.
+</ParamField>
+
+<ParamField path="offsetX" type="number" default="0">
+  Horizontal offset of the shader content relative to its origin. Range `-1` to `1`, where `1` shifts content by the full canvas width.
+</ParamField>
+
+<ParamField path="offsetY" type="number" default="0">
+  Vertical offset of the shader content relative to its origin. Range `-1` to `1`, where `1` shifts content by the full canvas height.
+</ParamField>
+
+<ParamField path="worldWidth" type="number" default="0">
+  The virtual width of the shader graphic before it is scaled to fit the canvas. When set to `0` the shader infers the world size from the canvas aspect ratio. Use this together with `worldHeight` to lock the graphic to a specific intrinsic aspect ratio regardless of the canvas size.
+</ParamField>
+
+<ParamField path="worldHeight" type="number" default="0">
+  The virtual height of the shader graphic before it is scaled to fit the canvas. See `worldWidth`.
+</ParamField>
+
+---
+
+## ShaderFit
+
+```ts
+type ShaderFit = 'none' | 'contain' | 'cover';
+```
+
+The string union type for the `fit` param. Mirrors CSS `object-fit` semantics.
+
+---
+
+## ShaderFitOptions
+
+```ts
+const ShaderFitOptions = {
+  none: 0,
+  contain: 1,
+  cover: 2,
+} as const;
+```
+
+The numeric mapping used internally when sending `fit` to the GPU as a `float` uniform (`u_fit`). You won't need this when using the React components — it's used by each component when constructing `ShaderSizingUniforms`.
+
+```ts
+// Example: how a React component converts the fit prop to a uniform
+u_fit: ShaderFitOptions[fit], // 'contain' → 1
+```
+
+---
+
+## Default sizing presets
+
+Two default sizing configurations are exported, covering the two main categories of shader.
+
+### defaultObjectSizing
+
+Used by most animated shaders — those that render a single graphic that should fit within the canvas.
+
+```ts
+const defaultObjectSizing: Required<ShaderSizingParams> = {
+  fit: 'contain',
+  scale: 1,
+  rotation: 0,
+  offsetX: 0,
+  offsetY: 0,
+  originX: 0.5,
+  originY: 0.5,
+  worldWidth: 0,
+  worldHeight: 0,
+};
+```
+
+Shaders using `defaultObjectSizing`: `MeshGradient`, `SmokeRing`, `NeuroNoise`, `DotOrbit`, `SimplexNoise`, `Metaballs`, `Voronoi`, `Warp`, `GodRays`, `Spiral`, `Swirl`, `Dithering`, `GrainGradient`, `PulsingBorder`, `ColorPanels`, `StaticMeshGradient`, `StaticRadialGradient`, and others.
+
+### defaultPatternSizing
+
+Used by tiling pattern shaders — those that repeat across the canvas surface without a defined boundary.
+
+```ts
+const defaultPatternSizing: Required<ShaderSizingParams> = {
+  fit: 'none',
+  scale: 1,
+  rotation: 0,
+  offsetX: 0,
+  offsetY: 0,
+  originX: 0.5,
+  originY: 0.5,
+  worldWidth: 0,
+  worldHeight: 0,
+};
+```
+
+The only difference from `defaultObjectSizing` is `fit: 'none'`. Shaders using `defaultPatternSizing`: `DotGrid`, `Waves`, `PerlinNoise`, `PaperTexture`, and other tileable pattern shaders.
+
+---
+
+## ShaderSizingUniforms
+
+The raw uniform names sent to the GPU. You'll encounter these if you write a custom shader that uses the built-in vertex shader's sizing system.
+
+```ts
+interface ShaderSizingUniforms {
+  u_fit: 0 | 1 | 2;   // none | contain | cover
+  u_scale: number;
+  u_rotation: number;
+  u_originX: number;
+  u_originY: number;
+  u_offsetX: number;
+  u_offsetY: number;
+  u_worldWidth: number;
+  u_worldHeight: number;
+}
+```
+
+---
+
+## Usage example
+
+```tsx
+import { MeshGradient } from '@paper-design/shaders-react';
+
+// Contain the gradient in the center, slightly zoomed in and rotated
+<MeshGradient
+  style={{ width: '100%', height: '400px' }}
+  fit="contain"
+  scale={1.2}
+  rotation={15}
+  originX={0.5}
+  originY={0.5}
+  offsetX={0}
+  offsetY={0}
+  speed={1}
+/>
+
+// Cover mode — fills the container, content may be cropped
+<MeshGradient
+  style={{ width: '100%', height: '400px' }}
+  fit="cover"
+  speed={1}
+/>
+```
+
+<Tip>
+Set `worldWidth` and `worldHeight` to lock the shader to a specific aspect ratio. For example, `worldWidth={1} worldHeight={1}` makes the shader always render as a square regardless of the canvas shape.
+</Tip>

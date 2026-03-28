@@ -1,0 +1,195 @@
+---
+title: "React ShaderMount"
+description: "React component that mounts and controls a WebGL shader"
+---
+
+`ShaderMount` from `@paper-design/shaders-react` is the React wrapper around the vanilla [`ShaderMount` class](/api/shader-mount-class). It renders a `<div>` and manages a `ShaderMount` instance as a side effect, keeping it in sync with React props.
+
+<Note>
+This component is marked `'use client'`. In Next.js App Router projects, import it inside a Client Component or add `'use client'` at the top of the file that uses it.
+</Note>
+
+## ShaderMountProps
+
+```tsx
+import { ShaderMount } from '@paper-design/shaders-react';
+```
+
+<ParamField path="fragmentShader" type="string" required>
+  The GLSL fragment shader source code (WebGL 2). This prop is used to initialize the underlying `ShaderMount` instance. Changing it destroys and recreates the shader.
+</ParamField>
+
+<ParamField path="uniforms" type="ShaderMountUniformsReact" required>
+  An object of uniform values. In addition to all the types supported by the vanilla `ShaderMountUniforms`, the React version also accepts **strings**, which are treated as image URLs and loaded asynchronously as `HTMLImageElement`s.
+
+  An empty string `''` is replaced with a transparent 1×1 pixel placeholder so the shader stays valid while waiting for a real image.
+
+  ```ts
+  interface ShaderMountUniformsReact {
+    [key: string]: string | boolean | number | number[] | number[][] | HTMLImageElement | undefined;
+  }
+  ```
+</ParamField>
+
+<ParamField path="speed" type="number" default="0">
+  Animation speed multiplier. `0` = static, negative = reverse. Changes to this prop call `setSpeed()` on the underlying instance.
+</ParamField>
+
+<ParamField path="frame" type="number" default="0">
+  Frame offset in milliseconds. Changes to this prop call `setFrame()`.
+</ParamField>
+
+<ParamField path="minPixelRatio" type="number">
+  Minimum device pixel ratio to render at. Defaults to `2` in the underlying class. Changes call `setMinPixelRatio()`.
+</ParamField>
+
+<ParamField path="maxPixelCount" type="number">
+  Maximum physical pixel cap. Defaults to `1920 × 1080 × 4` in the underlying class. Changes call `setMaxPixelCount()`.
+</ParamField>
+
+<ParamField path="mipmaps" type="string[]">
+  Names of texture uniforms that should have mipmaps generated. Passed to the `ShaderMount` constructor on initialization.
+</ParamField>
+
+<ParamField path="webGlContextAttributes" type="WebGLContextAttributes">
+  Optional WebGL context attributes passed to `canvas.getContext('webgl2', ...)`. Captured on mount and not reactive — changes after mount have no effect.
+</ParamField>
+
+<ParamField path="width" type="string | number">
+  Convenience prop for the `style.width` of the container `<div>`. Numeric values are used as-is (treated as pixels). Equivalent to setting `style={{ width: ... }}`.
+</ParamField>
+
+<ParamField path="height" type="string | number">
+  Convenience prop for the `style.height` of the container `<div>`. Numeric values are used as-is (treated as pixels).
+</ParamField>
+
+<ParamField path="ref" type="React.Ref<PaperShaderElement>">
+  A ref forwarded to the container `<div>`. The element is typed as `PaperShaderElement`, so you can access `element.paperShaderMount` to reach the underlying `ShaderMount` instance.
+</ParamField>
+
+All standard `<div>` props (`className`, `style`, `onClick`, etc.) are also accepted and spread onto the container element. The `color` prop is omitted to avoid conflicts.
+
+---
+
+## ShaderComponentProps
+
+The prop type shared by all built-in React shader components. It is `ShaderMountProps` minus `fragmentShader` and `uniforms` (those are provided internally by each component).
+
+```ts
+interface ShaderComponentProps extends Omit<React.ComponentProps<'div'>, 'color' | 'ref'> {
+  ref?: React.Ref<PaperShaderElement>;
+  minPixelRatio?: number;
+  maxPixelCount?: number;
+  webGlContextAttributes?: WebGLContextAttributes;
+  width?: string | number;
+  height?: string | number;
+}
+```
+
+Each component then extends `ShaderComponentProps` with its own shader-specific params:
+
+```ts
+// Example from MeshGradient:
+interface MeshGradientProps extends ShaderComponentProps, MeshGradientParams {}
+```
+
+---
+
+## Usage example
+
+```tsx
+'use client';
+
+import { useRef } from 'react';
+import { ShaderMount } from '@paper-design/shaders-react';
+import type { PaperShaderElement } from '@paper-design/shaders-react';
+
+const fragmentShader = `#version 300 es
+precision mediump float;
+
+uniform float u_time;
+uniform vec4 u_colorA;
+uniform vec4 u_colorB;
+
+out vec4 fragColor;
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / vec2(800.0, 600.0);
+  float t = 0.5 + 0.5 * sin(u_time * 0.5 + uv.x * 3.14);
+  fragColor = mix(u_colorA, u_colorB, t);
+}
+`;
+
+export function MyShader() {
+  const ref = useRef<PaperShaderElement>(null);
+
+  return (
+    <ShaderMount
+      ref={ref}
+      fragmentShader={fragmentShader}
+      uniforms={{
+        u_colorA: [0.878, 0.918, 1.0, 1.0],
+        u_colorB: [0.388, 0.400, 0.945, 1.0],
+      }}
+      speed={1}
+      style={{ width: '100%', height: '400px' }}
+    />
+  );
+}
+```
+
+### Loading an image uniform from a URL
+
+String uniforms are automatically fetched and loaded as images:
+
+```tsx
+<ShaderMount
+  fragmentShader={myImageFilterShader}
+  uniforms={{
+    u_image: '/path/to/photo.jpg',   // loaded automatically
+    u_strength: 0.8,
+  }}
+  speed={0}
+  style={{ width: '500px', height: '500px' }}
+/>
+```
+
+### Accessing the ShaderMount instance via ref
+
+```tsx
+'use client';
+
+import { useRef, useCallback } from 'react';
+import { ShaderMount } from '@paper-design/shaders-react';
+import type { PaperShaderElement } from '@paper-design/shaders-react';
+
+export function ControlledShader() {
+  const ref = useRef<PaperShaderElement>(null);
+
+  const pause = useCallback(() => {
+    ref.current?.paperShaderMount?.setSpeed(0);
+  }, []);
+
+  const resume = useCallback(() => {
+    ref.current?.paperShaderMount?.setSpeed(1);
+  }, []);
+
+  return (
+    <>
+      <ShaderMount
+        ref={ref}
+        fragmentShader={myShader}
+        uniforms={{ u_color: [1, 0.5, 0, 1] }}
+        speed={1}
+        style={{ width: '400px', height: '400px' }}
+      />
+      <button onClick={pause}>Pause</button>
+      <button onClick={resume}>Resume</button>
+    </>
+  );
+}
+```
+
+<Tip>
+For the built-in shaders, prefer the named components (e.g. `<MeshGradient />`) over using `ShaderMount` directly. They handle uniform conversion from human-friendly props (CSS colors, degrees) to GPU-ready values automatically. Use `ShaderMount` only when writing a custom fragment shader.
+</Tip>
